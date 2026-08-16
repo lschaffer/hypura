@@ -127,12 +127,29 @@ pub struct ModelTag {
     pub details: ModelDetails,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ModelDetails {
     pub format: String,
     pub family: String,
     pub parameter_size: String,
     pub quantization_level: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PsResponse {
+    pub models: Vec<ProcessModel>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ProcessModel {
+    pub name: String,
+    pub model: String,
+    pub size: u64,
+    pub digest: String,
+    pub details: ModelDetails,
+    pub expires_at: String,
+    pub size_vram: u64,
+    pub context_size: u32,
 }
 
 #[derive(Debug, Serialize)]

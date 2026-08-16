@@ -32,6 +32,15 @@ enum Commands {
         #[arg(long)]
         ollama_models: Option<PathBuf>,
     },
+    /// List currently running and active loaded models
+    Ps {
+        /// Host of the running Hypura server
+        #[arg(long, default_value = "127.0.0.1")]
+        host: String,
+        /// Port of the running Hypura server
+        #[arg(long, default_value = "6000")]
+        port: u16,
+    },
     /// Load model with tiered scheduling and run inference
     Run {
         /// Path to model file
@@ -129,6 +138,7 @@ fn main() -> anyhow::Result<()> {
             models_dir,
             ollama_models,
         } => cli::list::run(models_dir, ollama_models),
+        Commands::Ps { host, port } => cli::ps::run(&host, port),
         Commands::Run {
             model,
             context,

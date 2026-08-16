@@ -25,10 +25,37 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/", get(health_handler))
         .route("/api/version", get(version_handler))
         .route("/api/tags", get(tags_handler))
+        .route("/api/ps", get(ps_handler))
         .route("/api/show", post(show_handler))
         .route("/api/generate", post(generate_handler))
         .route("/api/chat", post(chat_handler))
         .with_state(state)
+}
+
+async fn ps_handler(State(state): State<Arc<AppState>>) -> Json<PsResponse> {
+    let models = {
+        let manager = state.manager.lock().unwrap();
+        if let Some(ref active) = manager.active_model {
+            vec![ProcessModel {
+                name: active.name.clone(),
+                model: active.name.clone(),
+                size: active.gguf_info.file_size,
+                digest: "".into(),
+                details: ModelDetails {
+                    format: "gguf".into(),
+                    family: active.gguf_info.architecture.clone(),
+                    parameter_size: format_parameter_size(active.gguf_info.parameter_count),
+                    quantization_level: active.gguf_info.quantization.clone(),
+                },
+                expires_at: "".into(),
+                size_vram: active.gguf_info.file_size,
+                context_size: active.context_size,
+            }]
+        } else {
+            vec![]
+        }
+    };
+    Json(PsResponse { models })
 }
 
 async fn health_handler() -> Json<serde_json::Value> {

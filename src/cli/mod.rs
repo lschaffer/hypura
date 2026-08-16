@@ -6,5 +6,6 @@ pub mod iobench;
 pub mod list;
 pub mod optimize;
 pub mod profile;
+pub mod ps;
 pub mod run;
 pub mod serve;
