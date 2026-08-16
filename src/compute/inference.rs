@@ -258,13 +258,20 @@ pub fn generate_from_loaded(
         telemetry,
     } = params;
 
-    // Build context — with or without NVMe callback
     let config = &loaded.config;
+    let tokens = loaded.model.tokenize(prompt, true, true);
+    let prompt_len = tokens.len() as u32;
+    anyhow::ensure!(!tokens.is_empty(), "Prompt tokenized to zero tokens");
+
+    // Ensure context is large enough for prompt + generation tokens
+    let effective_ctx = (prompt_len + sampling.max_tokens).max(config.n_ctx);
+
+    // Build context — with or without NVMe callback
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {
         let state_ptr = Arc::into_raw(prefetch_state.clone()) as *mut std::ffi::c_void;
         let ctx = LlamaContext::new_with_callback(
             &loaded.model,
-            config.n_ctx,
+            effective_ctx,
             config.n_batch,
             config.n_threads,
             Some(eval_callback),
@@ -277,14 +284,10 @@ pub fn generate_from_loaded(
         }
         ctx
     } else {
-        LlamaContext::new(&loaded.model, config.n_ctx, config.n_batch, config.n_threads)?
+        LlamaContext::new(&loaded.model, effective_ctx, config.n_batch, config.n_threads)?
     };
 
     let mut sampler = LlamaSampler::new(sampling);
-
-    let tokens = loaded.model.tokenize(prompt, true, true);
-    let prompt_len = tokens.len() as u32;
-    anyhow::ensure!(!tokens.is_empty(), "Prompt tokenized to zero tokens");
 
     // Prefetch NVMe layers before prompt eval
     if let Some(ref state) = loaded.prefetch_state {
