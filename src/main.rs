@@ -1,6 +1,7 @@
 mod cli;
 
 use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(name = "hypura", version, about = "Storage-tier-aware LLM inference scheduler")]
@@ -22,6 +23,15 @@ enum Commands {
         /// Path to model file or HuggingFace model ID
         model: String,
     },
+    /// List all available local and Ollama models
+    List {
+        /// Custom models directory to scan
+        #[arg(long)]
+        models_dir: Option<PathBuf>,
+        /// Ollama models directory (default: ~/.ollama/models)
+        #[arg(long)]
+        ollama_models: Option<PathBuf>,
+    },
     /// Load model with tiered scheduling and run inference
     Run {
         /// Path to model file
@@ -41,17 +51,23 @@ enum Commands {
     },
     /// Start Ollama-compatible API server
     Serve {
-        /// Path to model file
-        model: String,
+        /// Optional initial model to pre-load (dynamic on-demand if omitted)
+        model: Option<String>,
         /// Host to bind to
         #[arg(long, default_value = "127.0.0.1")]
         host: String,
         /// Port to bind to
         #[arg(long, default_value = "8080")]
         port: u16,
-        /// Maximum context length
+        /// Default context length (can be overridden per request via num_ctx)
         #[arg(long, default_value = "4096")]
         context: u32,
+        /// Custom models directory to scan
+        #[arg(long)]
+        models_dir: Option<PathBuf>,
+        /// Ollama models directory (default: ~/.ollama/models)
+        #[arg(long)]
+        ollama_models: Option<PathBuf>,
     },
     /// Benchmark tok/s: Hypura scheduling vs naive mmap
     Bench {
@@ -109,6 +125,10 @@ fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Profile { force } => cli::profile::run(force),
         Commands::Estimate { model } => cli::estimate::run(&model),
+        Commands::List {
+            models_dir,
+            ollama_models,
+        } => cli::list::run(models_dir, ollama_models),
         Commands::Run {
             model,
             context,
@@ -116,7 +136,21 @@ fn main() -> anyhow::Result<()> {
             interactive,
             max_tokens,
         } => cli::run::run(&model, context, prompt.as_deref(), interactive, max_tokens),
-        Commands::Serve { model, host, port, context } => cli::serve::run(&model, &host, port, context),
+        Commands::Serve {
+            model,
+            host,
+            port,
+            context,
+            models_dir,
+            ollama_models,
+        } => cli::serve::run(
+            model.as_deref(),
+            &host,
+            port,
+            context,
+            models_dir,
+            ollama_models,
+        ),
         Commands::Bench {
             model,
             baseline,

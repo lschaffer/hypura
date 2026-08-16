@@ -1,0 +1,184 @@
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::time::Instant;
+
+use crate::compute::inference::{
+    compute_gpu_budget, gpu_layers_from_placement, load_model, InferenceConfig, LoadedModel,
+};
+use crate::model::gguf::GgufFile;
+use crate::profiler;
+use crate::scheduler::placement::compute_placement_with_context;
+use crate::server::ollama_types::GgufInfo;
+use crate::server::registry::{ModelRegistry, RegisteredModel};
+
+pub struct ActiveModel {
+    pub name: String,
+    pub path: PathBuf,
+    pub loaded: Arc<std::sync::Mutex<LoadedModel>>,
+    pub gguf_info: GgufInfo,
+    pub context_size: u32,
+    pub last_used: Instant,
+}
+
+pub struct ModelManager {
+    pub registry: ModelRegistry,
+    pub active_model: Option<ActiveModel>,
+    pub default_context: u32,
+}
+
+impl ModelManager {
+    pub fn new(
+        registry: ModelRegistry,
+        default_context: u32,
+        initial_model_path: Option<&str>,
+    ) -> anyhow::Result<Self> {
+        let mut manager = Self {
+            registry,
+            active_model: None,
+            default_context,
+        };
+
+        if let Some(path_str) = initial_model_path {
+            manager.load_model_by_path(Path::new(path_str), default_context)?;
+        }
+
+        Ok(manager)
+    }
+
+    /// Load or reuse an active model based on request model name and context size.
+    pub fn get_or_load(
+        &mut self,
+        requested_name: &str,
+        requested_ctx: Option<u32>,
+    ) -> anyhow::Result<(Arc<std::sync::Mutex<LoadedModel>>, String, GgufInfo)> {
+        let target_context = requested_ctx.unwrap_or(self.default_context);
+
+        // 1. Check if an active model can be reused
+        if let Some(ref mut active) = self.active_model {
+            let matches_name = active.name.eq_ignore_ascii_case(requested_name)
+                || requested_name.is_empty()
+                || active.name.starts_with(requested_name)
+                || requested_name.starts_with(&active.name);
+
+            if matches_name && active.context_size >= target_context {
+                active.last_used = Instant::now();
+                return Ok((
+                    active.loaded.clone(),
+                    active.name.clone(),
+                    active.gguf_info.clone(),
+                ));
+            }
+        }
+
+        // 2. Resolve model path from registry or direct path
+        let resolved = if let Some(reg_model) = self.registry.resolve_model(requested_name) {
+            reg_model.clone()
+        } else if Path::new(requested_name).exists() {
+            // Direct file path fallback
+            let p = Path::new(requested_name);
+            let file_size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
+            let gguf = GgufFile::open(p)?;
+            let metadata = crate::model::metadata::ModelMetadata::from_gguf(&gguf)?;
+            RegisteredModel {
+                name: p
+                    .file_stem()
+                    .map(|s| s.to_string_lossy().to_string())
+                    .unwrap_or_else(|| "model".into()),
+                path: p.to_path_buf(),
+                source: "Direct".into(),
+                size: file_size,
+                metadata,
+            }
+        } else {
+            anyhow::bail!(
+                "Model '{}' not found. Run 'hypura list' to see available models.",
+                requested_name
+            );
+        };
+
+        // 3. Unload old model and load the requested model
+        self.load_model_entry(&resolved, target_context)
+    }
+
+    /// Load a model from a RegisteredModel entry
+    fn load_model_entry(
+        &mut self,
+        model_entry: &RegisteredModel,
+        context_size: u32,
+    ) -> anyhow::Result<(Arc<std::sync::Mutex<LoadedModel>>, String, GgufInfo)> {
+        // Drop current model first to reclaim Metal GPU memory
+        self.active_model = None;
+
+        tracing::info!(
+            "Loading model '{}' ({}) with context {}...",
+            model_entry.name,
+            model_entry.path.display(),
+            context_size
+        );
+
+        let gguf = GgufFile::open(&model_entry.path)?;
+        let hardware = match profiler::load_cached_profile()? {
+            Some(p) if !profiler::is_profile_stale(&p) => p,
+            _ => {
+                let p = profiler::run_full_profile()?;
+                let _ = profiler::save_profile(&p);
+                p
+            }
+        };
+
+        let plan = compute_placement_with_context(&gguf, &hardware, context_size)?;
+        let gpu_budget = compute_gpu_budget(&hardware, &model_entry.metadata, context_size);
+        let n_gpu_layers = gpu_layers_from_placement(&plan, &gguf, gpu_budget);
+
+        let config = InferenceConfig {
+            n_ctx: context_size,
+            ..InferenceConfig::default()
+        };
+
+        let loaded = load_model(&model_entry.path, &config, n_gpu_layers, &plan, &gguf)?;
+        let gguf_info = model_entry.to_gguf_info();
+        let loaded_arc = Arc::new(std::sync::Mutex::new(loaded));
+
+        self.active_model = Some(ActiveModel {
+            name: model_entry.name.clone(),
+            path: model_entry.path.clone(),
+            loaded: loaded_arc.clone(),
+            gguf_info: gguf_info.clone(),
+            context_size,
+            last_used: Instant::now(),
+        });
+
+        tracing::info!(
+            "Model '{}' loaded successfully ({} layers offloaded to GPU)",
+            model_entry.name,
+            n_gpu_layers
+        );
+
+        Ok((loaded_arc, model_entry.name.clone(), gguf_info))
+    }
+
+    /// Load a model directly by file path
+    fn load_model_by_path(
+        &mut self,
+        path: &Path,
+        context_size: u32,
+    ) -> anyhow::Result<(Arc<std::sync::Mutex<LoadedModel>>, String, GgufInfo)> {
+        let file_size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        let gguf = GgufFile::open(path)?;
+        let metadata = crate::model::metadata::ModelMetadata::from_gguf(&gguf)?;
+        let name = path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "model".into());
+
+        let entry = RegisteredModel {
+            name,
+            path: path.to_path_buf(),
+            source: "Direct".into(),
+            size: file_size,
+            metadata,
+        };
+
+        self.load_model_entry(&entry, context_size)
+    }
+}

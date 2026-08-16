@@ -2,11 +2,11 @@
 set -e
 
 # ==============================================================================
-# Hypura Startup Script with 12k Context & Tailscale Funnel
+# Hypura Startup Script: Dynamic Multi-Model Serve & Tailscale Funnel
 # ==============================================================================
 
 PORT=6000
-CONTEXT=12288  # 12k context window
+CONTEXT=12288  # Default 12k context window (client can override per request via num_ctx)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 
@@ -16,19 +16,8 @@ fi
 
 HYPURA_BIN="$ROOT_DIR/target/release/hypura"
 
-# Auto-detect default model
+# Optional pre-warmed model
 MODEL="${1:-}"
-if [ -z "$MODEL" ]; then
-    if [ -f "$ROOT_DIR/mistral-small3.2-24b.gguf" ]; then
-        MODEL="$ROOT_DIR/mistral-small3.2-24b.gguf"
-    elif [ -f "$ROOT_DIR/gemma4-98e-v5-coder.gguf" ]; then
-        MODEL="$ROOT_DIR/gemma4-98e-v5-coder.gguf"
-    else
-        echo "Error: No model specified and no default .gguf found in $ROOT_DIR"
-        echo "Usage: $0 [path_to_model.gguf]"
-        exit 1
-    fi
-fi
 
 # Build binary if not present
 if [ ! -f "$HYPURA_BIN" ]; then
@@ -56,9 +45,13 @@ TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "")
 
 echo ""
 echo "=========================================================="
-echo " Hypura Ollama-Compatible Server"
-echo " Model:   $MODEL"
-echo " Context: $CONTEXT tokens (12k)"
+echo " Hypura Ollama-Compatible Multi-Model Server"
+if [ -n "$MODEL" ]; then
+    echo " Mode:    Pre-warmed ($MODEL)"
+else
+    echo " Mode:    Dynamic On-Demand (All Local + Ollama Models)"
+fi
+echo " Context: $CONTEXT default tokens (client adjustable)"
 echo " Port:    $PORT"
 echo "----------------------------------------------------------"
 echo " Local URL:     http://localhost:$PORT"
@@ -69,5 +62,9 @@ fi
 echo "=========================================================="
 echo ""
 
-# Start Hypura Server
-exec "$HYPURA_BIN" serve "$MODEL" --host 0.0.0.0 --port "$PORT" --context "$CONTEXT"
+# Start Hypura Server (with or without pre-warmed model)
+if [ -n "$MODEL" ]; then
+    exec "$HYPURA_BIN" serve "$MODEL" --host 0.0.0.0 --port "$PORT" --context "$CONTEXT"
+else
+    exec "$HYPURA_BIN" serve --host 0.0.0.0 --port "$PORT" --context "$CONTEXT"
+fi

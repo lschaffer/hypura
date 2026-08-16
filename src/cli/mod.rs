@@ -3,6 +3,7 @@ pub mod estimate;
 pub mod fmt_util;
 pub mod inspect;
 pub mod iobench;
+pub mod list;
 pub mod optimize;
 pub mod profile;
 pub mod run;
