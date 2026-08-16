@@ -83,13 +83,16 @@ pub fn ndjson_chat_stream(
     let (tx, rx) = mpsc::channel::<Result<String, std::io::Error>>(64);
 
     tokio::spawn(async move {
+        let mut full_response = String::new();
         while let Some(token) = token_rx.recv().await {
+            full_response.push_str(&token.text);
             let chunk = ChatResponseChunk {
                 model: model_name.clone(),
                 created_at: now_rfc3339(),
                 message: ChatMessage {
                     role: "assistant".into(),
                     content: token.text,
+                    tool_calls: None,
                 },
                 done: false,
                 done_reason: None,
@@ -109,12 +112,14 @@ pub fn ndjson_chat_stream(
 
         let total_ns = request_start.elapsed().as_nanos() as u64;
         let result = result_rx.await.ok();
+        let (_cleaned, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
         let final_chunk = ChatResponseChunk {
             model: model_name,
             created_at: now_rfc3339(),
             message: ChatMessage {
                 role: "assistant".into(),
                 content: String::new(),
+                tool_calls,
             },
             done: true,
             done_reason: Some("stop".into()),

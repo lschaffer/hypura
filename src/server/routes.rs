@@ -138,7 +138,7 @@ async fn chat_handler(
     let load_duration_ns = state.load_duration_ns;
 
     let sampling = build_sampling(&req.options);
-    let prompt = format_chat_prompt(&req.messages);
+    let prompt = format_chat_prompt(&req.messages, req.tools.as_ref());
     let model_name = state.model_name.clone();
 
     let (token_tx, token_rx) = mpsc::unbounded_channel();
@@ -251,6 +251,7 @@ async fn collect_chat(
     while let Some(token) = token_rx.recv().await {
         full_response.push_str(&token.text);
     }
+    let (content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
     let total_ns = request_start.elapsed().as_nanos() as u64;
     let result = result_rx.await.ok();
 
@@ -259,7 +260,8 @@ async fn collect_chat(
         created_at: now_rfc3339(),
         message: ChatMessage {
             role: "assistant".into(),
-            content: full_response,
+            content,
+            tool_calls,
         },
         done: true,
         done_reason: Some("stop".into()),

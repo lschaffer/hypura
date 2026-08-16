@@ -28,7 +28,29 @@ pub struct ChatRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChatMessage {
     pub role: String,
+    #[serde(default)]
     pub content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool_calls: Option<Vec<ToolCall>>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ToolCall {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(rename = "type", default = "default_function_type", skip_serializing_if = "Option::is_none")]
+    pub call_type: Option<String>,
+    pub function: FunctionCall,
+}
+
+fn default_function_type() -> Option<String> {
+    Some("function".into())
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct FunctionCall {
+    pub name: String,
+    pub arguments: serde_json::Value,
 }
 
 #[derive(Debug, Default, Deserialize)]
