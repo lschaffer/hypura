@@ -42,22 +42,26 @@ fi
 # Display Network Endpoints
 LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "127.0.0.1")
 TAILSCALE_IP=$(tailscale ip -4 2>/dev/null || echo "")
+FUNNEL_URL=$(tailscale funnel status 2>/dev/null | grep -o 'https://[a-zA-Z0-9.-]*\.ts\.net' | head -n 1)
 
 echo ""
 echo "=========================================================="
 echo " Hypura Ollama-Compatible Multi-Model Server"
 if [ -n "$MODEL" ]; then
-    echo " Mode:    Pre-warmed ($MODEL)"
+    echo " Mode:           Pre-warmed ($MODEL)"
 else
-    echo " Mode:    Dynamic On-Demand (All Local + Ollama Models)"
+    echo " Mode:           Dynamic On-Demand (All Local + Ollama Models)"
 fi
-echo " Context: $CONTEXT default tokens (client adjustable)"
-echo " Port:    $PORT"
+echo " Context:        $CONTEXT default tokens (client adjustable)"
+echo " Port:           $PORT"
 echo "----------------------------------------------------------"
-echo " Local URL:     http://localhost:$PORT"
-echo " LAN URL:       http://$LOCAL_IP:$PORT"
+echo " Local URL:      http://localhost:$PORT"
+echo " LAN URL:        http://$LOCAL_IP:$PORT"
 if [ -n "$TAILSCALE_IP" ]; then
-    echo " Tailscale URL: http://$TAILSCALE_IP:$PORT"
+    echo " Tailscale IP:   http://$TAILSCALE_IP:$PORT"
+fi
+if [ -n "$FUNNEL_URL" ]; then
+    echo " Public HTTPS:   $FUNNEL_URL"
 fi
 echo "=========================================================="
 echo ""
