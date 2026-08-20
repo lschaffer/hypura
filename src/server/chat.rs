@@ -205,6 +205,12 @@ fn format_qwen_chat_prompt(
         if msg.role == "system" {
             continue;
         }
+        if msg.role == "tool" {
+            prompt.push_str("<|im_start|>user\n<tool_response>\n");
+            prompt.push_str(&msg.content);
+            prompt.push_str("\n</tool_response><|im_end|>\n");
+            continue;
+        }
         prompt.push_str(&format!("<|im_start|>{}\n", msg.role));
         if !msg.content.is_empty() {
             prompt.push_str(&msg.content);

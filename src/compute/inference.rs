@@ -570,6 +570,17 @@ pub fn generate_blocking(
             break;
         }
 
+        // Early-stop on complete tool calls or closing turn tokens to prevent over-generation loops
+        if generated_text.contains("</tool_call>")
+            || generated_text.contains("</tool__call>")
+            || generated_text.contains("</toolcall>")
+            || generated_text.contains("<|im_end|>")
+            || generated_text.contains("</assistant>")
+            || (generated_text.contains("<|tool_call|>") && generated_text.ends_with('}'))
+        {
+            break;
+        }
+
         ctx.decode(&[token_id])?;
     }
 
@@ -1053,6 +1064,17 @@ pub fn generate_with_nvme_scheduling(
         }
 
         if is_eog {
+            break;
+        }
+
+        // Early-stop on complete tool calls or closing turn tokens to prevent over-generation loops
+        if generated_text.contains("</tool_call>")
+            || generated_text.contains("</tool__call>")
+            || generated_text.contains("</toolcall>")
+            || generated_text.contains("<|im_end|>")
+            || generated_text.contains("</assistant>")
+            || (generated_text.contains("<|tool_call|>") && generated_text.ends_with('}'))
+        {
             break;
         }
 

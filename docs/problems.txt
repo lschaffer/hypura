@@ -1,37 +1,55 @@
-now the model found the correct tool - called but after instead of summarize the result or show it, it called again the getgroupid 
-what should be corrected in the hypura engine?
-10:34 PM
-Based on the raw output shown in the screenshot (</assistant> </assistant> <tool_call> </assistant> </assistant> <tool_call>), here is the exact diagnosis and what needs to be adjusted in the Hypura engine:
+ook the pictures first tool call was ok success but after hypura (ministral3:14b) started to call the first getgroupid again and again what should be correct and how in hypura engine
+10:45 PM
+Here is the exact technical explanation of why Ministral-3 (14B) enters this loop on Hypura and how to fix it in the Hypura engine:
 
-Root Causes in the Hypura Engine
-1. Missing Stop Tokens / EOS Handling
-The Symptom: The model outputs </assistant> </assistant> <tool_call>... instead of stopping.
-Why it happens: When generating a response, the model emits an end-of-turn token (or closing tag), but Hypura does not stop generation. The model then enters a "text-completion hallucination loop," generating pseudo-conversation turns and repeating its first turn (getgroupid).
-Fix in Hypura: Ensure the sampler/generation request configures the correct stop sequences for the active model:
+1. What the Screenshots Reveal
+Look closely at the raw token output in the screenshot:
+
+text
+</assistant> </assistant> <tool_call> </assistant> </assistant> <tool_call>
+Three critical issues are happening simultaneously inside Hypura:
+
+Missing Stop Sequences: Hypura does not terminate generation when </tool_call> is generated. The model continues predicting tokens into the void, hallucinating closing tags (</assistant> </assistant>) and new <tool_call> headers.
+Mistral Template Mismatch: Ministral was trained on [INST], [TOOL_CALLS], and [TOOL_RESULTS], not on ChatML <assistant> tags. When it sees <assistant> in Hypura's prompt template, it treats it as raw text and tries to "complete" the XML tags.
+role: "tool" Serialization Failure: After get_devices_around_position returns 3888 characters, Hypura is not formatting the tool response with the delimiters Ministral expects. Ministral gets confused by the raw JSON blob, loses track of the dialog state, and restarts from turn 1 (getgroupid).
+2. How to Fix This in Hypura Engine
+A. Add Hard Stop Sequences (Immediate Fix)
+In Hypura's sampling parameters for the model generation call, pass the following stop tokens:
+
 json
 "stop": [
-  "<|im_end|>",
-  "<|endoftext|>",
+  "</tool_call>",
   "</assistant>",
   "</s>",
-  "<|tool_call|>"
+  "<|im_end|>",
+  "[TOOL_CALLS]",
+  "[/TOOL_CALLS]"
 ]
-2. Chat Template Mapping for role: "tool"
-The Symptom: After receiving the 3884-character tool result, the model doesn't realize it already has the data and falls back to calling getgroupid again.
-Why it happens: When Hypura formats the OpenAI-compatible /v1/chat/completions message history for Qwen / Mistral:
-For Qwen 2.5 / Qwen 3 / ChatML, the tool result must be formatted as:
-<|im_start|>user
-<tool_response>
-{"devices": [...]}
-</tool_response><|im_end|>
-<|im_start|>assistant
-(or <|im_start|>tool\n{"devices": [...]}\n<|im_end|>\n<|im_start|>assistant)
-If Hypura converts role: "tool" as plain text without the proper <|im_start|> / <|im_end|> delimiters, the model cannot distinguish between user instructions and tool return data, causing it to reset its reasoning and re-run its initial tool (getgroupid).
-3. Repetition Penalty / Presence Penalty on Tool Tokens
-The Symptom: The model repeats identical tool tokens ({"name": "getgroupid"}).
-Fix in Hypura: Set a default repeat_penalty of 1.05 – 1.15 (or presence_penalty: 0.1 – 0.3). This prevents smaller models from getting trapped in token repetition loops.
-Checklist for Hypura:
-Area	What to Check & Fix in Hypura
-Stop Sequences	Add `<
-Tool Response Template	Ensure role: "tool" messages are wrapped in <tool_response>...</tool_response> or standard ChatML `<
-Assistant Prompting	Ensure every assistant turn ends strictly with `<
+Effect: As soon as the model writes </tool_call>, Hypura immediately cuts off generation. It will never emit </assistant> </assistant> <tool_call> or loop tool calls in a single turn.
+
+B. Correct Tool Result Formatting for Mistral / Ministral
+When Hypura converts the OpenAI-compatible /v1/chat/completions payload into the raw context prompt for Mistral/Ministral:
+
+Incorrect (ChatML style applied to Mistral):
+text
+<|im_start|>tool
+{ "success": true, "data": [...] }
+<|im_end|>
+Correct (Mistral Native format):
+text
+[INST] [TOOL_RESULTS] {"name": "get_devices_around_position", "content": {...}} [/TOOL_RESULTS] [/INST]
+Or if using generic prompt-based tool formatting:
+text
+[INST] TOOL RESULT for get_devices_around_position:
+{ "success": true, "data": [...] }
+Now provide the final summary to the user. [/INST]
+C. Enforce Assistant Prompt Suffix
+When calling inference for the assistant turn after a tool returns, ensure Hypura ends the prompt with the exact assistant start token without trailing spaces:
+
+For Mistral:   (space after [/INST])
+For ChatML: <|im_start|>assistant\n
+Summary Checklist for Hypura:
+Priority	Fix	Where in Hypura
+P0 (Critical)	Add stop: ["</tool_call>", "</assistant>", "</s>"]	Sampler / Generation options
+P0 (Critical)	Correctly serialize role: "tool" in prompt builder	Chat template / prompt formatter
+P1	Add repeat_penalty: 1.1 to prevent repeating getgroupid	Model sampling parameters
