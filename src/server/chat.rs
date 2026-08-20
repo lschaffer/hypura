@@ -18,7 +18,7 @@ pub fn format_chat_prompt(
 
     let is_qwen = arch.map_or(false, |a| {
         let l = a.to_lowercase();
-        l.contains("qwen35") || l.contains("qwen3.8") || l.contains("qwen3") || l.contains("qwen2")
+        l.contains("qwen35") || l.contains("qwen3.8") || l.contains("qwen3_8")
     });
 
     if is_qwen {
