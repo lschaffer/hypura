@@ -263,7 +263,75 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
         }
     }
 
-    // 3. Try parsing Standard XML / JSON syntax: <tool_call>{"name": ..., "arguments": ...}</tool_call>
+    // 3. Try parsing Qwen 3.8 XML syntax:
+    // <tool_call>
+    // <function=name>
+    // <parameter=key>value</parameter>
+    // </function>
+    // </tool_call>
+    while let Some(start_idx) = cleaned_text.find("<function=") {
+        let after_func = &cleaned_text[start_idx + "<function=".len()..];
+        if let Some(func_name_end) = after_func.find('>') {
+            let func_name = after_func[..func_name_end].trim().to_string();
+            let remainder = &after_func[func_name_end + 1..];
+            
+            let func_end_idx = remainder.find("</function>").unwrap_or(remainder.len());
+            let func_body = &remainder[..func_end_idx];
+
+            let mut arguments = serde_json::Map::new();
+            let mut param_search = func_body;
+            while let Some(p_start) = param_search.find("<parameter=") {
+                let after_p = &param_search[p_start + "<parameter=".len()..];
+                if let Some(p_name_end) = after_p.find('>') {
+                    let p_name = after_p[..p_name_end].trim().to_string();
+                    let p_val_after = &after_p[p_name_end + 1..];
+                    if let Some(p_val_end) = p_val_after.find("</parameter>") {
+                        let p_val_raw = p_val_after[..p_val_end].trim();
+                        if let Ok(json_val) = serde_json::from_str::<serde_json::Value>(p_val_raw) {
+                            arguments.insert(p_name, json_val);
+                        } else {
+                            arguments.insert(p_name, serde_json::Value::String(p_val_raw.to_string()));
+                        }
+                        param_search = &p_val_after[p_val_end + "</parameter>".len()..];
+                        continue;
+                    }
+                }
+                break;
+            }
+
+            tool_calls.push(ToolCall {
+                id: Some(format!("call_{}", uuid_short())),
+                call_type: Some("function".into()),
+                function: FunctionCall {
+                    name: func_name,
+                    arguments: serde_json::Value::Object(arguments),
+                },
+            });
+
+            // Clean up surrounding tags if present
+            let full_start = if let Some(tc_open) = cleaned_text[..start_idx].rfind("<tool_call>") {
+                let between = &cleaned_text[tc_open + "<tool_call>".len()..start_idx];
+                if between.trim().is_empty() {
+                    tc_open
+                } else {
+                    start_idx
+                }
+            } else {
+                start_idx
+            };
+            let end_offset = start_idx + "<function=".len() + func_name_end + 1 + func_end_idx + "</function>".len();
+            let full_end = if let Some(tc_close) = cleaned_text[end_offset..].find("</tool_call>") {
+                end_offset + tc_close + "</tool_call>".len()
+            } else {
+                end_offset
+            };
+            cleaned_text.replace_range(full_start..full_end.min(cleaned_text.len()), "");
+        } else {
+            break;
+        }
+    }
+
+    // 4. Try parsing Standard XML / JSON syntax: <tool_call>{"name": ..., "arguments": ...}</tool_call>
     let json_markers = [
         ("<tool_call>", "</tool_call>"),
         ("<toolcall>", "</toolcall>"),
@@ -316,7 +384,7 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
         }
     }
 
-    // 5. Clean up thought channels if present: <|channel>thought\n...<channel|> or <thought>...</thought>
+    // 6. Clean up thought channels if present: <|channel>thought\n...<channel|> or <thought>...</thought> or <think>...</think>
     cleaned_text = strip_channel_tags(&cleaned_text);
 
     let trimmed = cleaned_text.trim().to_string();
@@ -542,6 +610,7 @@ fn strip_channel_tags(text: &str) -> String {
         ("<|channel|>commentary\n", "<|end|>"),
         ("<|channel|>commentary", "<|end|>"),
         ("<thought>", "</thought>"),
+        ("<think>", "</think>"),
     ];
 
     for (start_tag, end_tag) in channel_patterns {
@@ -682,6 +751,19 @@ mod tests {
         assert_eq!(tcs.len(), 1);
         assert_eq!(tcs[0].function.name, "get_current_weather");
         assert_eq!(tcs[0].function.arguments["location"], serde_json::json!("Tokyo"));
+    }
+
+    #[test]
+    fn test_parse_qwen38_xml_tool_call() {
+        let raw = "<think>\nThinking about weather...\n</think>\n<tool_call>\n<function=get_forecast>\n<parameter=location>\nGraz, Austria\n</parameter>\n<parameter=hours>\n12\n</parameter>\n</function>\n</tool_call>";
+        let (content, tool_calls) = parse_tool_calls(raw);
+        assert_eq!(content, "");
+        assert!(tool_calls.is_some());
+        let tcs = tool_calls.unwrap();
+        assert_eq!(tcs.len(), 1);
+        assert_eq!(tcs[0].function.name, "get_forecast");
+        assert_eq!(tcs[0].function.arguments["location"], serde_json::json!("Graz, Austria"));
+        assert_eq!(tcs[0].function.arguments["hours"], serde_json::json!(12));
     }
 
     #[test]
