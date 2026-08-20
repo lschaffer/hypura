@@ -1,33 +1,37 @@
-What happened step-by-step:
-Successful Data Fetch:
+now the model found the correct tool - called but after instead of summarize the result or show it, it called again the getgroupid 
+what should be corrected in the hypura engine?
+10:34 PM
+Based on the raw output shown in the screenshot (</assistant> </assistant> <tool_call> </assistant> </assistant> <tool_call>), here is the exact diagnosis and what needs to be adjusted in the Hypura engine:
 
-The model called get_devices_around_position(...).
-The tool returned all 3 stations with their temperature values (18.5°C, 17.8°C, 19.2°C).
-Complete Answer Formulated:
-
-The model wrote the final answer:
-The temperatures for the stations around Göttingen are up to date:
-
-Göttingen: 18.5°C
-Göttingen Nord: 17.8°C
-Göttingen Süd: 19.2°C
-Model Loop / Over-Execution:
-
-Instead of emitting <|im_end|> to finish the turn, the model continued generating tokens and decided to query each device ID individually:
-getgroupid
-get_device(dlu_id: 102)
-get_device(dlu_id: 103)
-get_device(dlu_id: 104)
-Because the model generated new tool call tokens at the end of its response, the app dutifully executed the requested tool calls.
-Is it a problem with Hypura / the Model?
-Yes. Smaller or local models (SLMs like 3B–8B) commonly have an "over-completion" bias. When they see a list of device IDs in the JSON context, they reflexively want to iterate over each ID and fetch individual details, even when they already have all the required data.
-
-
-<tool_call>
-{"name": "getgroupid", "arguments": {}}
-</tool_call>
-
-assistant
-<tool_call>
-{"name": "get_devices_around_position", "arguments": {"detail": 1, "filter": "online", "format": "json", "grpId": 1, "km": "20", "language": "de", "lat": "51.53348", "lng": "9.47161", "output": "text"}}
-</tool_call>
+Root Causes in the Hypura Engine
+1. Missing Stop Tokens / EOS Handling
+The Symptom: The model outputs </assistant> </assistant> <tool_call>... instead of stopping.
+Why it happens: When generating a response, the model emits an end-of-turn token (or closing tag), but Hypura does not stop generation. The model then enters a "text-completion hallucination loop," generating pseudo-conversation turns and repeating its first turn (getgroupid).
+Fix in Hypura: Ensure the sampler/generation request configures the correct stop sequences for the active model:
+json
+"stop": [
+  "<|im_end|>",
+  "<|endoftext|>",
+  "</assistant>",
+  "</s>",
+  "<|tool_call|>"
+]
+2. Chat Template Mapping for role: "tool"
+The Symptom: After receiving the 3884-character tool result, the model doesn't realize it already has the data and falls back to calling getgroupid again.
+Why it happens: When Hypura formats the OpenAI-compatible /v1/chat/completions message history for Qwen / Mistral:
+For Qwen 2.5 / Qwen 3 / ChatML, the tool result must be formatted as:
+<|im_start|>user
+<tool_response>
+{"devices": [...]}
+</tool_response><|im_end|>
+<|im_start|>assistant
+(or <|im_start|>tool\n{"devices": [...]}\n<|im_end|>\n<|im_start|>assistant)
+If Hypura converts role: "tool" as plain text without the proper <|im_start|> / <|im_end|> delimiters, the model cannot distinguish between user instructions and tool return data, causing it to reset its reasoning and re-run its initial tool (getgroupid).
+3. Repetition Penalty / Presence Penalty on Tool Tokens
+The Symptom: The model repeats identical tool tokens ({"name": "getgroupid"}).
+Fix in Hypura: Set a default repeat_penalty of 1.05 – 1.15 (or presence_penalty: 0.1 – 0.3). This prevents smaller models from getting trapped in token repetition loops.
+Checklist for Hypura:
+Area	What to Check & Fix in Hypura
+Stop Sequences	Add `<
+Tool Response Template	Ensure role: "tool" messages are wrapped in <tool_response>...</tool_response> or standard ChatML `<
+Assistant Prompting	Ensure every assistant turn ends strictly with `<

@@ -58,9 +58,12 @@ pub struct GenerateOptions {
     pub temperature: Option<f32>,
     pub top_k: Option<i32>,
     pub top_p: Option<f32>,
+    pub repeat_penalty: Option<f32>,
+    pub presence_penalty: Option<f32>,
     pub num_predict: Option<u32>,
     pub num_ctx: Option<u32>,
     pub seed: Option<u32>,
+    pub stop: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]

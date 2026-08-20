@@ -252,6 +252,9 @@ fn build_sampling(opts: &GenerateOptions) -> crate::compute::ffi::SamplingParams
     if let Some(p) = opts.top_p {
         s.top_p = p;
     }
+    if let Some(rp) = opts.repeat_penalty {
+        s.repeat_penalty = rp;
+    }
     if let Some(n) = opts.num_predict {
         s.max_tokens = n;
     }
