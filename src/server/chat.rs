@@ -56,7 +56,8 @@ pub fn format_chat_prompt(
         prompt.push_str("\n</tools>\n\nIMPORTANT TOOL CALL RULES:\n");
         prompt.push_str("1. If a function requires parameters (such as latitude, longitude, or ID) that are unknown or missing in the user query, ALWAYS call the prerequisite lookup tool FIRST (e.g., call `get_coordinates` or geocoding before searching for devices around a location).\n");
         prompt.push_str("2. NEVER invent, guess, or hallucinate latitude, longitude, or coordinate numbers.\n");
-        prompt.push_str("3. Return each function call as a JSON object within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": \"function_name\", \"arguments\": {\"arg_name\": \"arg_value\"}}\n</tool_call>\nWhen no tool call is needed, respond directly with standard text.<|im_end|>\n");
+        prompt.push_str("3. Return each function call as a JSON object within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": \"function_name\", \"arguments\": {\"arg_name\": \"arg_value\"}}\n</tool_call>\n");
+        prompt.push_str("4. STOP generating immediately after outputting your final text response or <tool_call></tool_call>. Do NOT issue redundant follow-up calls for IDs already contained in previous tool responses.<|im_end|>\n");
     } else if let Some(sys) = base_system {
         prompt.push_str(&format!("<|im_start|>system\n{sys}<|im_end|>\n"));
     }
@@ -478,12 +479,13 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
     // 6. Clean up thought channels if present: <|channel>thought\n...<channel|> or <thought>...</thought> or <think>...</think>
     cleaned_text = strip_channel_tags(&cleaned_text);
 
-    let trimmed = cleaned_text.trim().to_string();
     let final_tool_calls = if tool_calls.is_empty() {
         None
     } else {
         Some(tool_calls)
     };
+
+    let trimmed = cleaned_text.trim().to_string();
 
     (trimmed, final_tool_calls)
 }
