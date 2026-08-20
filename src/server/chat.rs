@@ -53,7 +53,10 @@ pub fn format_chat_prompt(
         prompt.push_str("# Tools\n\nYou may call one or more functions to assist with the user query.\n\n");
         prompt.push_str("You are provided with function signatures within <tools></tools> XML tags:\n<tools>\n");
         prompt.push_str(&tools_str);
-        prompt.push_str("\n</tools>\n\nFor each function call, return a json object with function name and arguments within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": \"function_name\", \"arguments\": {\"arg_name\": \"arg_value\"}}\n</tool_call>\nWhen no tool call is needed, respond directly with standard text.<|im_end|>\n");
+        prompt.push_str("\n</tools>\n\nIMPORTANT TOOL CALL RULES:\n");
+        prompt.push_str("1. If a function requires parameters (such as latitude, longitude, or ID) that are unknown or missing in the user query, ALWAYS call the prerequisite lookup tool FIRST (e.g., call `get_coordinates` or geocoding before searching for devices around a location).\n");
+        prompt.push_str("2. NEVER invent, guess, or hallucinate latitude, longitude, or coordinate numbers.\n");
+        prompt.push_str("3. Return each function call as a JSON object within <tool_call></tool_call> XML tags:\n<tool_call>\n{\"name\": \"function_name\", \"arguments\": {\"arg_name\": \"arg_value\"}}\n</tool_call>\nWhen no tool call is needed, respond directly with standard text.<|im_end|>\n");
     } else if let Some(sys) = base_system {
         prompt.push_str(&format!("<|im_start|>system\n{sys}<|im_end|>\n"));
     }
