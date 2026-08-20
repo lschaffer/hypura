@@ -1,0 +1,33 @@
+What happened step-by-step:
+Successful Data Fetch:
+
+The model called get_devices_around_position(...).
+The tool returned all 3 stations with their temperature values (18.5°C, 17.8°C, 19.2°C).
+Complete Answer Formulated:
+
+The model wrote the final answer:
+The temperatures for the stations around Göttingen are up to date:
+
+Göttingen: 18.5°C
+Göttingen Nord: 17.8°C
+Göttingen Süd: 19.2°C
+Model Loop / Over-Execution:
+
+Instead of emitting <|im_end|> to finish the turn, the model continued generating tokens and decided to query each device ID individually:
+getgroupid
+get_device(dlu_id: 102)
+get_device(dlu_id: 103)
+get_device(dlu_id: 104)
+Because the model generated new tool call tokens at the end of its response, the app dutifully executed the requested tool calls.
+Is it a problem with Hypura / the Model?
+Yes. Smaller or local models (SLMs like 3B–8B) commonly have an "over-completion" bias. When they see a list of device IDs in the JSON context, they reflexively want to iterate over each ID and fetch individual details, even when they already have all the required data.
+
+
+<tool_call>
+{"name": "getgroupid", "arguments": {}}
+</tool_call>
+
+assistant
+<tool_call>
+{"name": "get_devices_around_position", "arguments": {"detail": 1, "filter": "online", "format": "json", "grpId": 1, "km": "20", "language": "de", "lat": "51.53348", "lng": "9.47161", "output": "text"}}
+</tool_call>
