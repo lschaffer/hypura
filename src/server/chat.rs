@@ -418,7 +418,17 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
     for (start_tag, end_tag) in json_markers {
         while let Some(start_idx) = cleaned_text.find(start_tag) {
             let after_start = &cleaned_text[start_idx + start_tag.len()..];
-            if let Some(end_idx) = after_start.find(end_tag) {
+            let found_end = after_start.find(end_tag).map(|idx| (idx, end_tag.len())).or_else(|| {
+                if start_tag == "<tool_call>" {
+                    // Handle typos emitted by local models e.g. </tool__call>
+                    after_start.find("</tool__call>").map(|idx| (idx, "</tool__call>".len()))
+                        .or_else(|| after_start.find("</toolcall>").map(|idx| (idx, "</toolcall>".len())))
+                } else {
+                    None
+                }
+            });
+
+            if let Some((end_idx, matched_end_len)) = found_end {
                 let inner_json = after_start[..end_idx].trim();
                 if let Some(tc) = parse_json_tool_call(inner_json) {
                     tool_calls.push(tc);
@@ -431,7 +441,7 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
                         }
                     }
                 }
-                let full_end_idx = start_idx + start_tag.len() + end_idx + end_tag.len();
+                let full_end_idx = start_idx + start_tag.len() + end_idx + matched_end_len;
                 cleaned_text.replace_range(start_idx..full_end_idx, "");
             } else {
                 break;
@@ -803,6 +813,17 @@ mod tests {
             tcs[0].function.arguments["unit"],
             serde_json::json!("celsius")
         );
+    }
+
+    #[test]
+    fn test_parse_corrupted_closing_tag() {
+        let raw = "<tool_call>\n{\"name\": \"getgroupid\", \"arguments\": {}}\n</tool__call>";
+        let (content, tool_calls) = parse_tool_calls(raw);
+        assert_eq!(content, "");
+        assert!(tool_calls.is_some());
+        let tcs = tool_calls.unwrap();
+        assert_eq!(tcs.len(), 1);
+        assert_eq!(tcs[0].function.name, "getgroupid");
     }
 
     #[test]
