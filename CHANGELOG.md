@@ -4,6 +4,24 @@ All notable changes to the **Hypura** project are documented in this file.
 
 ---
 
+## [0.2.2] - 2026-08-20
+
+### ✨ Features & Bug Fixes
+
+#### 1. Sampler State Synchronization (`llama_sampler_accept`)
+* Integrated `llama_sampler_accept` into `LlamaSampler::sample()` to ensure newly sampled tokens are registered in the sampler chain.
+* **Fixes Repetition Loops:** Resolves infinite word repeating loops (`type, type, type...`) during tool call generation on models like Qwen 2.5 / 3.8.
+
+#### 2. Max 90% Unified Memory Limit Guard
+* Added a hard 90% physical system memory limit (`(hw.memory.total_bytes * 0.90)`) for Metal GPU offloading (`compute_gpu_budget`) and RAM keep-resident mode (`load_model`).
+* Prevents total memory exhaustion and system instability on Apple Silicon Macs (e.g. 24GB M-series).
+
+#### 3. Expanded Native Tool Call Format Support (Mistral 24B & Qwen)
+* Added support for `[TOOL_CALLS] [...]` array structures (standard Mistral v3 / Mistral 24B tool calling format) in `parse_tool_calls`.
+* Reverted experimental `muse-glimmer` additions to maintain clean macOS compatibility.
+
+---
+
 ## [0.2.1] - 2026-08-16
 
 ### 🚀 Major Highlights & Real-World Agent Demo
