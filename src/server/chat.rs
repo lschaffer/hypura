@@ -66,6 +66,12 @@ pub fn format_chat_prompt(
         if msg.role == "system" {
             continue;
         }
+        if msg.role == "tool" {
+            prompt.push_str("<|im_start|>tool\n");
+            prompt.push_str(&msg.content);
+            prompt.push_str("<|im_end|>\n");
+            continue;
+        }
         prompt.push_str(&format!("<|im_start|>{}\n", msg.role));
         if !msg.content.is_empty() {
             prompt.push_str(&msg.content);
