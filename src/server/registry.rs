@@ -235,6 +235,23 @@ impl ModelRegistry {
     }
 }
 
+/// Helper: Resolve a model path by checking local filesystem first, then ModelRegistry
+pub fn resolve_model_path(query: &str) -> anyhow::Result<PathBuf> {
+    let direct_path = Path::new(query);
+    if direct_path.exists() {
+        return Ok(direct_path.to_path_buf());
+    }
+
+    let registry = ModelRegistry::new(None, None);
+    if let Some(model) = registry.resolve_model(query) {
+        return Ok(model.path.clone());
+    }
+
+    anyhow::bail!(
+        "Model not found: '{query}'. Run `hypura list` to see available models."
+    )
+}
+
 /// Detect default Ollama models directory
 pub fn detect_ollama_dir() -> Option<PathBuf> {
     if let Ok(env_val) = std::env::var("OLLAMA_MODELS") {

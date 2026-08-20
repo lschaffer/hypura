@@ -183,7 +183,7 @@ async fn chat_handler(
 ) -> Response {
     let request_start = Instant::now();
 
-    let (loaded, model_name, _info) = {
+    let (loaded, model_name, info) = {
         let mut manager = state.manager.lock().unwrap();
         match manager.get_or_load(&req.model, req.options.num_ctx) {
             Ok(res) => res,
@@ -198,7 +198,7 @@ async fn chat_handler(
     };
 
     let sampling = build_sampling(&req.options);
-    let prompt = format_chat_prompt(&req.messages, req.tools.as_ref());
+    let prompt = format_chat_prompt(&req.messages, req.tools.as_ref(), Some(&info.architecture));
 
     let (token_tx, token_rx) = mpsc::unbounded_channel();
     let (result_tx, result_rx) = oneshot::channel::<GenerationResult>();
@@ -309,7 +309,9 @@ async fn collect_chat(
     while let Some(token) = token_rx.recv().await {
         full_response.push_str(&token.text);
     }
+    tracing::info!("CHAT RAW RESPONSE: {:?}", full_response);
     let (content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
+    tracing::info!("PARSED TOOL CALLS: {:?}, CLEANED CONTENT: {:?}", tool_calls, content);
     let total_ns = request_start.elapsed().as_nanos() as u64;
     let result = result_rx.await.ok();
 

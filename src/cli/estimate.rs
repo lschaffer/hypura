@@ -8,8 +8,8 @@ use hypura::scheduler::placement::{compute_placement, summarize_placement};
 use super::fmt_util::{format_bytes, format_params};
 
 pub fn run(model_path: &str) -> anyhow::Result<()> {
-    let path = Path::new(model_path);
-    anyhow::ensure!(path.exists(), "Model file not found: {model_path}");
+    let resolved_path = hypura::server::registry::resolve_model_path(model_path)?;
+    let path = resolved_path.as_path();
 
     // Load or create hardware profile
     let hardware = match profiler::load_cached_profile()? {

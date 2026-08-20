@@ -5,8 +5,8 @@ use hypura::model::{gguf::GgufFile, metadata::ModelMetadata, tensor_role::Tensor
 use super::fmt_util::{format_bytes, format_params};
 
 pub fn run(model_path: &str, show_tensors: bool) -> anyhow::Result<()> {
-    let path = Path::new(model_path);
-    anyhow::ensure!(path.exists(), "Model file not found: {model_path}");
+    let resolved_path = hypura::server::registry::resolve_model_path(model_path)?;
+    let path = resolved_path.as_path();
 
     let ext = path
         .extension()
@@ -14,7 +14,7 @@ pub fn run(model_path: &str, show_tensors: bool) -> anyhow::Result<()> {
         .unwrap_or("");
 
     match ext {
-        "gguf" => inspect_gguf(path, show_tensors),
+        "gguf" | "" => inspect_gguf(path, show_tensors),
         "safetensors" => anyhow::bail!("Safetensors inspect not yet implemented"),
         _ => anyhow::bail!("Unsupported model format: .{ext}"),
     }
@@ -36,6 +36,9 @@ fn inspect_gguf(path: &Path, show_tensors: bool) -> anyhow::Result<()> {
     println!("  Context length: {}", metadata.context_length);
     if let Some(ref q) = metadata.quantization {
         println!("  Quantization: {q}");
+    }
+    if let Some(template) = gguf.get_string("tokenizer.chat_template") {
+        println!("  Chat template:\n{}", template);
     }
     if metadata.is_moe {
         println!(

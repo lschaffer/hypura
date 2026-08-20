@@ -29,8 +29,8 @@ async fn run_async(
     interactive: bool,
     max_tokens: u32,
 ) -> anyhow::Result<()> {
-    let path = Path::new(model_path);
-    anyhow::ensure!(path.exists(), "Model file not found: {model_path}");
+    let resolved_path = hypura::server::registry::resolve_model_path(model_path)?;
+    let path = resolved_path.as_path();
 
     // Load or create hardware profile
     let hardware = match profiler::load_cached_profile()? {
@@ -91,7 +91,13 @@ async fn run_single_prompt(
     let (token_tx, mut token_rx) = tokio::sync::mpsc::unbounded_channel();
 
     let path = model_path.to_path_buf();
-    let prompt_owned = prompt.to_string();
+    let arch = gguf.get_string("general.architecture");
+    let prompt_owned = if prompt.starts_with("<|") {
+        prompt.to_string()
+    } else {
+        let history = vec![("user".to_string(), prompt.to_string())];
+        format_chat_prompt(&history, arch.as_deref())
+    };
     let config_clone = config.clone();
     let plan_clone = plan.clone();
     let gguf_clone = gguf.clone();
@@ -158,7 +164,8 @@ async fn run_interactive(
         }
 
         history.push(("user".into(), input.to_string()));
-        let full_prompt = format_chat_prompt(&history);
+        let arch = gguf.get_string("general.architecture");
+        let full_prompt = format_chat_prompt(&history, arch.as_deref());
 
         let (token_tx, mut token_rx) = tokio::sync::mpsc::unbounded_channel();
         let path = model_path.to_path_buf();
@@ -195,13 +202,24 @@ async fn run_interactive(
     Ok(())
 }
 
-/// Simple ChatML-style prompt formatting.
-fn format_chat_prompt(history: &[(String, String)]) -> String {
+fn format_chat_prompt(history: &[(String, String)], arch: Option<&str>) -> String {
+    let is_gpt_oss = arch.map_or(false, |a| {
+        let l = a.to_lowercase();
+        l == "gptoss" || l == "gpt-oss" || l == "openai_moe"
+    });
+
     let mut prompt = String::new();
-    for (role, content) in history {
-        prompt.push_str(&format!("<|im_start|>{role}\n{content}<|im_end|>\n"));
+    if is_gpt_oss {
+        for (role, content) in history {
+            prompt.push_str(&format!("<|start|>{role}<|message|>{content}<|end|>\n"));
+        }
+        prompt.push_str("<|start|>assistant");
+    } else {
+        for (role, content) in history {
+            prompt.push_str(&format!("<|im_start|>{role}\n{content}<|im_end|>\n"));
+        }
+        prompt.push_str("<|im_start|>assistant\n");
     }
-    prompt.push_str("<|im_start|>assistant\n");
     prompt
 }
 

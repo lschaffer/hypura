@@ -37,8 +37,8 @@ async fn run_async(
     prompt: Option<&str>,
     force: bool,
 ) -> anyhow::Result<()> {
-    let path = Path::new(model_path);
-    anyhow::ensure!(path.exists(), "Model file not found: {model_path}");
+    let resolved_path = hypura::server::registry::resolve_model_path(model_path)?;
+    let path = resolved_path.as_path();
 
     let prompt_text = prompt.unwrap_or(DEFAULT_PROMPT);
 

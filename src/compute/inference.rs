@@ -187,11 +187,15 @@ pub fn load_model(
     let estimated_committed = gpu_committed_estimate + buffer_bytes + runtime_overhead;
     let headroom: u64 = 4 * (1 << 30);
 
+    // Enforce 90% maximum unified memory limit (leave 10% for macOS OS/system safety)
+    let max_ram_limit = (total_ram as f64 * 0.90) as u64;
+    let effective_max_ram = max_ram_limit.min(total_ram.saturating_sub(headroom));
+
     let keep_resident = nvme_bytes > 0
-        && (estimated_committed + nvme_bytes) <= total_ram.saturating_sub(headroom);
+        && (estimated_committed + nvme_bytes) <= effective_max_ram;
 
     let should_preload = keep_resident
-        && (estimated_committed + nvme_bytes) <= total_ram.saturating_sub(6 * (1 << 30));
+        && (estimated_committed + nvme_bytes) <= effective_max_ram.saturating_sub(2 * (1 << 30));
 
     if keep_resident {
         tracing::info!(
@@ -373,7 +377,10 @@ pub fn generate_from_loaded(
 /// Compute GPU budget for model weights (bytes) after reserving space for
 /// KV cache and compute buffers within the Metal working set.
 pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, context_length: u32) -> u64 {
-    let gpu_working_set = hw.gpu.as_ref().map_or(0, |g| g.vram_bytes);
+    let raw_vram = hw.gpu.as_ref().map_or(0, |g| g.vram_bytes);
+    let max_memory_limit = (hw.memory.total_bytes as f64 * 0.90) as u64;
+    let gpu_working_set = raw_vram.min(max_memory_limit);
+
     // KV cache on GPU: 2 * layers * kv_heads * head_dim * 2 bytes * context
     let head_dim = if metadata.num_heads > 0 {
         metadata.embedding_dim as u64 / metadata.num_heads as u64
@@ -385,8 +392,9 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
         * head_dim
         * 2
         * context_length as u64;
-    // Reserve 2 GiB for compute buffers + Metal framework overhead
-    let runtime_overhead: u64 = 2 * (1 << 30);
+    // Reserve 2.5 GiB plus 10% dynamic working set overhead for Metal compute buffers and graph nodes
+    let dynamic_headroom = gpu_working_set / 10;
+    let runtime_overhead: u64 = 25 * (1 << 27) + dynamic_headroom; // ~3.1 GB safety buffer
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)
@@ -426,7 +434,7 @@ pub fn gpu_layers_from_placement(
     let expert_streaming = plan.inference_mode == InferenceMode::ExpertStreaming;
     let dense_ffn_streaming = plan.inference_mode == InferenceMode::DenseFfnStreaming;
     let mut max_layer: i32 = -1;
-    let mut first_nvme_layer: Option<u32> = None;
+    let mut first_non_gpu_layer: Option<u32> = None;
 
     // Compute per-layer sizes (excluding streamed tensors from GPU budget)
     let mut layer_sizes: std::collections::BTreeMap<u32, u64> = std::collections::BTreeMap::new();
@@ -451,8 +459,8 @@ pub fn gpu_layers_from_placement(
             }
 
             *layer_sizes.entry(layer_idx).or_default() += t.size_bytes;
-            if plan.tier_assignments.get(&t.name) == Some(&StorageTier::Nvme) {
-                first_nvme_layer = Some(match first_nvme_layer {
+            if plan.tier_assignments.get(&t.name) != Some(&StorageTier::Gpu) {
+                first_non_gpu_layer = Some(match first_non_gpu_layer {
                     Some(existing) => existing.min(layer_idx),
                     None => layer_idx,
                 });
@@ -464,9 +472,9 @@ pub fn gpu_layers_from_placement(
         return 0;
     }
 
-    // Cap by NVMe cutoff (in expert-streaming, first_nvme_layer is None → no cap)
-    let from_nvme = match first_nvme_layer {
-        Some(nvme_start) => nvme_start as i32 + 1,
+    // Cap by plan cutoff (first layer with non-GPU tensors stays on CPU)
+    let from_plan = match first_non_gpu_layer {
+        Some(non_gpu_start) => non_gpu_start as i32,
         None => max_layer + 1 + 1,
     };
 
@@ -490,7 +498,7 @@ pub fn gpu_layers_from_placement(
     // +1 for the output layer llama.cpp counts separately
     let from_capacity = max_fitting + 1;
 
-    from_nvme.min(from_capacity)
+    from_plan.min(from_capacity)
 }
 
 /// Run inference on a blocking thread. Streams tokens via `token_tx`.
@@ -1222,8 +1230,8 @@ mod tests {
             assignments.insert(t.name.clone(), tier);
         }
         let plan = make_plan(assignments);
-        // Layers 0-5 on GPU (6 layers) + 1 output = 7
-        assert_eq!(gpu_layers_from_placement(&plan, &gguf, u64::MAX), 7);
+        // Layers 0-5 on GPU (6 layers)
+        assert_eq!(gpu_layers_from_placement(&plan, &gguf, u64::MAX), 6);
     }
 
     #[test]
