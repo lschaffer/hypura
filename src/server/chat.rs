@@ -16,6 +16,15 @@ pub fn format_chat_prompt(
         return format_gptoss_chat_prompt(messages, tools);
     }
 
+    let is_qwen = arch.map_or(false, |a| {
+        let l = a.to_lowercase();
+        l.contains("qwen35") || l.contains("qwen3.8") || l.contains("qwen3") || l.contains("qwen2")
+    });
+
+    if is_qwen {
+        return format_qwen_chat_prompt(messages, tools);
+    }
+
     let mut prompt = String::new();
 
     // Default ChatML format
@@ -143,6 +152,72 @@ fn format_gptoss_chat_prompt(
     }
 
     prompt.push_str("<|start|>assistant");
+    prompt
+}
+
+/// Specialized prompt formatting for Qwen 3.5 / 3.8 / Qwen 2.5 models.
+fn format_qwen_chat_prompt(
+    messages: &[ChatMessage],
+    tools: Option<&serde_json::Value>,
+) -> String {
+    let mut prompt = String::new();
+
+    let tools_array = tools.and_then(|val| match val {
+        serde_json::Value::Array(arr) if !arr.is_empty() => Some(val),
+        _ => None,
+    });
+
+    let system_msg = messages.iter().find(|m| m.role == "system");
+    let base_system = system_msg.map(|m| m.content.as_str());
+
+    if let Some(tools_json) = tools_array {
+        let clean_tools: Vec<&serde_json::Value> = match tools_json {
+            serde_json::Value::Array(arr) => arr
+                .iter()
+                .map(|t| t.get("function").unwrap_or(t))
+                .collect(),
+            _ => vec![tools_json],
+        };
+        let tools_str = serde_json::to_string_pretty(&clean_tools).unwrap_or_default();
+        prompt.push_str("<|im_start|>system\n");
+        if let Some(sys) = base_system {
+            prompt.push_str(sys);
+            prompt.push_str("\n\n");
+        }
+        prompt.push_str("# Tools\n\nYou have access to the following functions:\n\n<tools>\n");
+        prompt.push_str(&tools_str);
+        prompt.push_str("\n</tools>\n\nIf you choose to call a function ONLY reply in the following format with NO suffix:\n\n<tool_call>\n<function=example_function_name>\n<parameter=example_parameter_1>\nvalue_1\n</parameter>\n</function>\n</tool_call>\n<|im_end|>\n");
+    } else if let Some(sys) = base_system {
+        prompt.push_str(&format!("<|im_start|>system\n{sys}<|im_end|>\n"));
+    }
+
+    for msg in messages {
+        if msg.role == "system" {
+            continue;
+        }
+        prompt.push_str(&format!("<|im_start|>{}\n", msg.role));
+        if !msg.content.is_empty() {
+            prompt.push_str(&msg.content);
+        }
+        if let Some(ref tool_calls) = msg.tool_calls {
+            for tc in tool_calls {
+                prompt.push_str(&format!("<tool_call>\n<function={}>\n", tc.function.name));
+                if let Some(obj) = tc.function.arguments.as_object() {
+                    for (k, v) in obj {
+                        let val_str = match v {
+                            serde_json::Value::String(s) => s.clone(),
+                            other => other.to_string(),
+                        };
+                        prompt.push_str(&format!("<parameter={k}>\n{val_str}\n</parameter>\n"));
+                    }
+                }
+                prompt.push_str("</function>\n</tool_call>");
+            }
+        }
+        prompt.push_str("<|im_end|>\n");
+    }
+
+    prompt.push_str("<|im_start|>assistant\n<think>\n");
     prompt
 }
 
