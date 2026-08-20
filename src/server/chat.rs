@@ -217,7 +217,7 @@ fn format_qwen_chat_prompt(
         prompt.push_str("<|im_end|>\n");
     }
 
-    prompt.push_str("<|im_start|>assistant\n<think>\n");
+    prompt.push_str("<|im_start|>assistant\n");
     prompt
 }
 
