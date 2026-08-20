@@ -406,12 +406,12 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
         }
     }
 
-    // 4. Try parsing Standard XML / JSON syntax: <tool_call>{"name": ..., "arguments": ...}</tool_call>
     let json_markers = [
         ("<tool_call>", "</tool_call>"),
+        ("<|tool_call|>", "<|tool_call|>"),
+        ("<|tool_call>", "<tool_call|>"),
         ("<toolcall>", "</toolcall>"),
         ("```tool_call", "```"),
-        ("<|tool_call>", "<tool_call|>"),
         ("[TOOL_CALLS]", "[/TOOL_CALLS]"),
     ];
 
@@ -423,6 +423,9 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
                     // Handle typos emitted by local models e.g. </tool__call>
                     after_start.find("</tool__call>").map(|idx| (idx, "</tool__call>".len()))
                         .or_else(|| after_start.find("</toolcall>").map(|idx| (idx, "</toolcall>".len())))
+                } else if start_tag == "<|tool_call|>" || start_tag == "<|tool_call>" {
+                    after_start.find("<|im_end|>").map(|idx| (idx, 0))
+                        .or_else(|| after_start.find("\n\n").map(|idx| (idx, 0)))
                 } else {
                     None
                 }
@@ -813,6 +816,17 @@ mod tests {
             tcs[0].function.arguments["unit"],
             serde_json::json!("celsius")
         );
+    }
+
+    #[test]
+    fn test_parse_special_pipe_tool_call() {
+        let raw = "<|tool_call|>\n{\"name\": \"getgroupid\", \"arguments\": {}}<|im_end|>";
+        let (content, tool_calls) = parse_tool_calls(raw);
+        assert_eq!(content, "");
+        assert!(tool_calls.is_some());
+        let tcs = tool_calls.unwrap();
+        assert_eq!(tcs.len(), 1);
+        assert_eq!(tcs[0].function.name, "getgroupid");
     }
 
     #[test]
