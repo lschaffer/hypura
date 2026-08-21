@@ -270,8 +270,11 @@ pub fn generate_from_loaded(
     let prompt_len = tokens.len() as u32;
     anyhow::ensure!(!tokens.is_empty(), "Prompt tokenized to zero tokens");
 
-    // Ensure context is large enough for prompt + generation tokens
-    let effective_ctx = (prompt_len + sampling.max_tokens).max(config.n_ctx);
+    // Ensure context is large enough for prompt + generation tokens, but capped by config.n_ctx
+    // and safe headroom to avoid Metal command buffer OOM during iterative multi-turn conversations
+    let max_safe_ctx = config.n_ctx.max(2048);
+    let requested_ctx = (prompt_len + sampling.max_tokens).max(config.n_ctx);
+    let effective_ctx = requested_ctx.min(max_safe_ctx).max(prompt_len + 32);
 
     // Build context — with or without NVMe callback, respecting KV cache quantization
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {
@@ -404,8 +407,8 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
         * head_dim
         * 2
         * context_length as u64;
-    // Reserve 1.5 GiB for Metal compute buffers and graph nodes (fits 27B-30B Q4 models 100% on 24GB Unified RAM)
-    let runtime_overhead: u64 = 15 * (1 << 26); // ~1.0 GB safety buffer
+    // Reserve headroom for Metal compute graph splits, SSM recurrent state buffers, and display compositor
+    let runtime_overhead: u64 = 2 * (1 << 30); // 2.0 GB safety buffer
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)
