@@ -60,9 +60,10 @@ impl ModelManager {
             let matches_name = active.name.eq_ignore_ascii_case(requested_name)
                 || requested_name.is_empty()
                 || active.name.starts_with(requested_name)
-                || requested_name.starts_with(&active.name);
+                || requested_name.starts_with(&active.name)
+                || active.path == std::path::Path::new(requested_name);
 
-            if matches_name && active.context_size >= target_context {
+            if matches_name {
                 active.last_used = Instant::now();
                 return Ok((
                     active.loaded.clone(),
