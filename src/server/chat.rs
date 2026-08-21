@@ -686,10 +686,22 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
             });
 
             if let Some((end_idx, matched_end_len)) = found_end {
-                let inner_json = after_start[..end_idx].trim();
-                if let Some(tc) = parse_json_tool_call(inner_json) {
+                let raw_inner = after_start[..end_idx].trim();
+                // Strip corrupted internal tags that models occasionally emit e.g. </arg_value>, </arg_name>, etc.
+                let inner_clean = if let Some(brace_start) = raw_inner.find('{') {
+                    let from_brace = &raw_inner[brace_start..];
+                    if let Some(brace_len) = find_matching_brace(from_brace) {
+                        &from_brace[..brace_len]
+                    } else {
+                        raw_inner
+                    }
+                } else {
+                    raw_inner
+                };
+
+                if let Some(tc) = parse_json_tool_call(inner_clean) {
                     tool_calls.push(tc);
-                } else if let Ok(val) = serde_json::from_str::<serde_json::Value>(inner_json) {
+                } else if let Ok(val) = serde_json::from_str::<serde_json::Value>(inner_clean) {
                     if let Some(arr) = val.as_array() {
                         for item in arr {
                             if let Some(tc) = parse_json_tool_call(&item.to_string()) {
@@ -1174,5 +1186,18 @@ mod tests {
         assert!(mistral_prompt.contains("[INST]"));
         assert!(mistral_prompt.contains("[AVAILABLE_TOOLS]"));
         assert!(mistral_prompt.contains("[/INST]"));
+    }
+
+    #[test]
+    fn test_parse_glm_tool_call_with_corrupted_trailing_tag() {
+        let raw = "<tool_call>{\"name\": \"get_devices_around_position\", \"arguments\": {\"place\": \"Göttingen, Germany\", \"km\": 20}}</arg_value></tool_call>";
+        let (content, tool_calls) = parse_tool_calls(raw);
+        assert_eq!(content, "");
+        assert!(tool_calls.is_some());
+        let tcs = tool_calls.unwrap();
+        assert_eq!(tcs.len(), 1);
+        assert_eq!(tcs[0].function.name, "get_devices_around_position");
+        assert_eq!(tcs[0].function.arguments["place"], serde_json::json!("Göttingen, Germany"));
+        assert_eq!(tcs[0].function.arguments["km"], serde_json::json!(20));
     }
 }
