@@ -25,6 +25,15 @@ pub fn format_chat_prompt(
         return format_qwen_chat_prompt(messages, tools);
     }
 
+    let is_mistral = arch.map_or(false, |a| {
+        let l = a.to_lowercase();
+        l.contains("mistral") || l.contains("ministral") || l.contains("codestral") || l.contains("nemo")
+    });
+
+    if is_mistral {
+        return format_mistral_chat_prompt(messages, tools);
+    }
+
     let mut prompt = String::new();
 
     // Default ChatML format
@@ -234,6 +243,107 @@ fn format_qwen_chat_prompt(
     }
 
     prompt.push_str("<|im_start|>assistant\n");
+    prompt
+}
+
+/// Specialized prompt formatting for Mistral, Ministral, Codestral, and NeMo models.
+fn format_mistral_chat_prompt(
+    messages: &[ChatMessage],
+    tools: Option<&serde_json::Value>,
+) -> String {
+    let mut prompt = String::new();
+
+    let tools_array = tools.and_then(|val| match val {
+        serde_json::Value::Array(arr) if !arr.is_empty() => Some(val),
+        _ => None,
+    });
+
+    let system_msg = messages.iter().find(|m| m.role == "system");
+    let base_system = system_msg.map(|m| m.content.as_str());
+
+    prompt.push_str("[INST] ");
+    if let Some(sys) = base_system {
+        prompt.push_str(sys);
+        prompt.push_str("\n\n");
+    }
+
+    if let Some(tools_json) = tools_array {
+        let clean_tools: Vec<&serde_json::Value> = match tools_json {
+            serde_json::Value::Array(arr) => arr
+                .iter()
+                .map(|t| t.get("function").unwrap_or(t))
+                .collect(),
+            _ => vec![tools_json],
+        };
+        let tools_str = serde_json::to_string_pretty(&clean_tools).unwrap_or_default();
+        prompt.push_str("[AVAILABLE_TOOLS] ");
+        prompt.push_str(&tools_str);
+        prompt.push_str(" [/AVAILABLE_TOOLS]\n\n");
+        prompt.push_str("IMPORTANT RULES:\n1. If a function requires parameters that are unknown in the query, call the prerequisite lookup tool FIRST.\n2. NEVER invent or hallucinate coordinates or numerical parameters.\n3. Return function calls strictly inside [TOOL_CALLS] [{\"name\": \"...\", \"arguments\": {...}}] [/TOOL_CALLS]\n4. When you receive [TOOL_RESULTS], summarize the results and answer the user directly. Do NOT repeat previous tool calls.\n\n");
+    }
+
+    let mut inside_inst = true;
+
+    for msg in messages {
+        if msg.role == "system" {
+            continue;
+        }
+
+        match msg.role.as_str() {
+            "user" => {
+                if !inside_inst {
+                    prompt.push_str("[INST] ");
+                    inside_inst = true;
+                }
+                prompt.push_str(&msg.content);
+                prompt.push_str(" [/INST]\n");
+                inside_inst = false;
+            }
+            "tool" => {
+                if !inside_inst {
+                    prompt.push_str("[INST] ");
+                    inside_inst = true;
+                }
+                prompt.push_str("[TOOL_RESULTS] {\"content\": ");
+                if msg.content.starts_with('{') || msg.content.starts_with('[') {
+                    prompt.push_str(&msg.content);
+                } else {
+                    prompt.push_str(&serde_json::to_string(&msg.content).unwrap_or_default());
+                }
+                prompt.push_str("} [/TOOL_RESULTS] [/INST]\n");
+                inside_inst = false;
+            }
+            "assistant" => {
+                if inside_inst {
+                    prompt.push_str(" [/INST]\n");
+                    inside_inst = false;
+                }
+                if let Some(ref tool_calls) = msg.tool_calls {
+                    let mut calls_arr = Vec::new();
+                    for tc in tool_calls {
+                        calls_arr.push(serde_json::json!({
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        }));
+                    }
+                    prompt.push_str(&format!(
+                        "[TOOL_CALLS] {} [/TOOL_CALLS]\n",
+                        serde_json::to_string(&calls_arr).unwrap_or_default()
+                    ));
+                }
+                if !msg.content.is_empty() {
+                    prompt.push_str(&msg.content);
+                    prompt.push_str("\n");
+                }
+            }
+            _ => {}
+        }
+    }
+
+    if inside_inst {
+        prompt.push_str(" [/INST]\n");
+    }
+
     prompt
 }
 
@@ -919,5 +1029,10 @@ mod tests {
         assert!(gpt_prompt.contains("to=functions.<function_name>"));
         assert!(gpt_prompt.contains("<|start|>user<|message|>What is 2+2?<|end|>"));
         assert!(gpt_prompt.ends_with("<|start|>assistant"));
+
+        let mistral_prompt = format_chat_prompt(&messages, Some(&tools), Some("mistral"));
+        assert!(mistral_prompt.contains("[INST]"));
+        assert!(mistral_prompt.contains("[AVAILABLE_TOOLS]"));
+        assert!(mistral_prompt.contains("[/INST]"));
     }
 }
