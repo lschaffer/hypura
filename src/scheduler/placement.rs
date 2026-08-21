@@ -30,12 +30,11 @@ pub fn compute_placement_with_context(
     context_length: u32,
 ) -> anyhow::Result<PlacementPlan> {
     let metadata = ModelMetadata::from_gguf(model)?;
-    // Cap KV headroom context — the model's max context (e.g., 131K) is the ceiling,
-    // not the operating point. Use a practical default for placement planning.
+    // Cap KV headroom context — practical working context size for placement planning
     let context_length = if context_length > 0 {
         context_length.min(metadata.context_length.max(2048))
     } else {
-        metadata.context_length.max(2048).min(8192)
+        metadata.context_length.max(2048).min(4096)
     };
     let capacities = compute_tier_capacities(hardware, &metadata, context_length);
 
@@ -141,13 +140,16 @@ fn compute_tier_capacities(
     let gpu_max = hw.gpu.as_ref().map_or(0, |g| g.vram_bytes);
 
     // Reserve space for KV cache and GPU runtime (compute buffers, Metal overhead).
-    // On unified memory (Apple Silicon), KV cache + compute live in the same
-    // working set as model weights — must subtract from gpu_bytes too.
+    // On unified memory (Apple Silicon), total RAM is shared between GPU and CPU.
     let kv_headroom = estimate_kv_bytes(metadata, context_length);
-    let gpu_bytes = gpu_max
-        .min(usable)
-        .saturating_sub(kv_headroom)
-        .saturating_sub(GPU_RUNTIME_OVERHEAD);
+    let gpu_bytes = if hw.memory.is_unified {
+        usable.saturating_sub(kv_headroom).saturating_sub(GPU_RUNTIME_OVERHEAD)
+    } else {
+        gpu_max
+            .min(usable)
+            .saturating_sub(kv_headroom)
+            .saturating_sub(GPU_RUNTIME_OVERHEAD)
+    };
     let ram_bytes = usable.saturating_sub(gpu_bytes).saturating_sub(kv_headroom);
     let unified_limit = usable.saturating_sub(kv_headroom);
 
@@ -397,8 +399,9 @@ fn try_dense_ffn_streaming_assign(
     let ffn_bytes: u64 = tensors.iter().filter(|t| is_ffn(&t.role)).map(|t| t.size_bytes).sum();
 
     let total = non_ffn_bytes + ffn_bytes;
+    // On unified memory, only trigger NVMe streaming if the model exceeds the unified RAM capacity
     if non_ffn_bytes > caps.unified_limit || total <= caps.unified_limit {
-        return None; // Either doesn't fit at all, or everything fits
+        return None; // Either doesn't fit at all, or everything fits resident in unified memory
     }
 
     if ffn_bytes == 0 {
@@ -626,9 +629,13 @@ fn lp_assign(
         x_nvme.push(vars.add(variable().binary()));
     }
 
-    // Binary variable per layer: 1 = NVMe, 0 = GPU/RAM
+    // Binary variables per layer
+    let mut layer_gpu = Vec::with_capacity(num_layers);
+    let mut layer_ram = Vec::with_capacity(num_layers);
     let mut layer_nvme = Vec::with_capacity(num_layers);
     for _ in 0..num_layers {
+        layer_gpu.push(vars.add(variable().binary()));
+        layer_ram.push(vars.add(variable().binary()));
         layer_nvme.push(vars.add(variable().binary()));
     }
 
@@ -650,7 +657,7 @@ fn lp_assign(
             continue;
         }
         let weight = t.size_bytes as f64 * t.access_freq;
-        objective += x_gpu[i] * (weight / (gpu_bw * 1.05));
+        objective += x_gpu[i] * (weight / (gpu_bw * 2.0));
         objective += x_ram[i] * (weight / ram_bw);
         objective += x_nvme[i] * (weight / nvme_bw);
     }
@@ -673,8 +680,8 @@ fn lp_assign(
             let weight = t.size_bytes as f64 * t.access_freq;
 
             // GPU and RAM transfers contribute to compute time.
-            // On unified memory, prefer GPU tier (x_gpu) over RAM (x_ram) by giving GPU a slight objective bonus (1.05x).
-            compute_expr += x_gpu[i] * (weight / (gpu_bw * 1.05));
+            // On unified memory, prefer GPU tier (x_gpu) over RAM (x_ram) by giving GPU a strong objective preference (2.0x).
+            compute_expr += x_gpu[i] * (weight / (gpu_bw * 2.0));
             compute_expr += x_ram[i] * (weight / ram_bw);
 
             // NVMe transfers contribute to I/O time (with MoE cache-hit discount)
@@ -730,16 +737,28 @@ fn lp_assign(
     }
     problem = problem.with(constraint!(unified_sum <= caps.unified_limit as f64));
 
+    // Each layer assigned to exactly one tier
+    for j in 0..num_layers {
+        problem = problem.with(constraint!(layer_gpu[j] + layer_ram[j] + layer_nvme[j] == 1.0));
+    }
+
+    // Layer contiguity: monotonicity — GPU layers come first (1 -> 0)
+    for j in 1..num_layers {
+        problem = problem.with(constraint!(layer_gpu[j] <= layer_gpu[j - 1]));
+    }
+
     // Layer contiguity: monotonicity — once NVMe starts, it stays NVMe
     for j in 1..num_layers {
         problem = problem.with(constraint!(layer_nvme[j] >= layer_nvme[j - 1]));
     }
 
-    // Link tensor NVMe vars to layer NVMe vars:
-    // All tensors in a layer share the same NVMe/non-NVMe assignment
+    // Link tensor tier vars to layer tier vars:
+    // All tensors in a layer share the exact same tier assignment
     for (i, t) in tensors.iter().enumerate() {
         if let Some(layer) = t.layer_index {
             if let Some(&j) = layer_pos.get(&layer) {
+                problem = problem.with(constraint!(x_gpu[i] == layer_gpu[j]));
+                problem = problem.with(constraint!(x_ram[i] == layer_ram[j]));
                 problem = problem.with(constraint!(x_nvme[i] == layer_nvme[j]));
             }
         }
