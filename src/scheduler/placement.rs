@@ -650,7 +650,7 @@ fn lp_assign(
             continue;
         }
         let weight = t.size_bytes as f64 * t.access_freq;
-        objective += x_gpu[i] * (weight / gpu_bw);
+        objective += x_gpu[i] * (weight / (gpu_bw * 1.05));
         objective += x_ram[i] * (weight / ram_bw);
         objective += x_nvme[i] * (weight / nvme_bw);
     }
@@ -672,8 +672,9 @@ fn lp_assign(
             }
             let weight = t.size_bytes as f64 * t.access_freq;
 
-            // GPU and RAM transfers contribute to compute time
-            compute_expr += x_gpu[i] * (weight / gpu_bw);
+            // GPU and RAM transfers contribute to compute time.
+            // On unified memory, prefer GPU tier (x_gpu) over RAM (x_ram) by giving GPU a slight objective bonus (1.05x).
+            compute_expr += x_gpu[i] * (weight / (gpu_bw * 1.05));
             compute_expr += x_ram[i] * (weight / ram_bw);
 
             // NVMe transfers contribute to I/O time (with MoE cache-hit discount)
