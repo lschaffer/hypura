@@ -66,6 +66,7 @@ pub struct LoadedModel {
     pub config: InferenceConfig,
     pub n_gpu_layers: i32,
     pub model_name: String,
+    pub kv_quantization: Option<crate::scheduler::types::KvQuantization>,
     // NVMe scheduling state (None when all tensors fit in GPU+RAM)
     _controller: Option<Box<HypuraBuftController>>,
     prefetch_state: Option<Arc<PrefetchState>>,
@@ -130,6 +131,7 @@ pub fn load_model(
             config: config.clone(),
             n_gpu_layers,
             model_name,
+            kv_quantization: plan.kv_cache_plan.kv_quantization,
             _controller: None,
             prefetch_state: None,
             keep_resident: false,
@@ -242,6 +244,7 @@ pub fn load_model(
         config: config.clone(),
         n_gpu_layers,
         model_name,
+        kv_quantization: plan.kv_cache_plan.kv_quantization,
         _controller: Some(controller),
         prefetch_state: Some(prefetch_state),
         keep_resident,
@@ -270,16 +273,17 @@ pub fn generate_from_loaded(
     // Ensure context is large enough for prompt + generation tokens
     let effective_ctx = (prompt_len + sampling.max_tokens).max(config.n_ctx);
 
-    // Build context — with or without NVMe callback
+    // Build context — with or without NVMe callback, respecting KV cache quantization
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {
         let state_ptr = Arc::into_raw(prefetch_state.clone()) as *mut std::ffi::c_void;
-        let ctx = LlamaContext::new_with_callback(
+        let ctx = LlamaContext::new_with_callback_and_kv(
             &loaded.model,
             effective_ctx,
             config.n_batch,
             config.n_threads,
             Some(eval_callback),
             state_ptr,
+            loaded.kv_quantization,
         )?;
         // Immediately convert back to avoid leak — the PrefetchState is kept alive
         // by the Arc in LoadedModel, not by this raw pointer.
@@ -288,7 +292,15 @@ pub fn generate_from_loaded(
         }
         ctx
     } else {
-        LlamaContext::new(&loaded.model, effective_ctx, config.n_batch, config.n_threads)?
+        LlamaContext::new_with_callback_and_kv(
+            &loaded.model,
+            effective_ctx,
+            config.n_batch,
+            config.n_threads,
+            None,
+            std::ptr::null_mut(),
+            loaded.kv_quantization,
+        )?
     };
 
     let mut sampler = LlamaSampler::new(sampling);
@@ -494,7 +506,6 @@ pub fn gpu_layers_from_placement(
             break;
         }
     }
-    // +1 for the output layer llama.cpp counts separately
     let from_capacity = max_fitting + 1;
 
     from_plan.min(from_capacity)
