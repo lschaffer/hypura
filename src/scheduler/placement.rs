@@ -140,16 +140,13 @@ fn compute_tier_capacities(
     let gpu_max = hw.gpu.as_ref().map_or(0, |g| g.vram_bytes);
 
     // Reserve space for KV cache and GPU runtime (compute buffers, Metal overhead).
-    // On unified memory (Apple Silicon), total RAM is shared between GPU and CPU.
+    // On unified memory (Apple Silicon), total RAM is shared between GPU and CPU,
+    // but Metal imposes a hard process limit (recommendedMaxWorkingSetSize, e.g. ~17.8 GB on 24 GB Mac).
     let kv_headroom = estimate_kv_bytes(metadata, context_length);
-    let gpu_bytes = if hw.memory.is_unified {
-        usable.saturating_sub(kv_headroom).saturating_sub(GPU_RUNTIME_OVERHEAD)
-    } else {
-        gpu_max
-            .min(usable)
-            .saturating_sub(kv_headroom)
-            .saturating_sub(GPU_RUNTIME_OVERHEAD)
-    };
+    let metal_safe_limit = gpu_max.min(usable);
+    let gpu_bytes = metal_safe_limit
+        .saturating_sub(kv_headroom)
+        .saturating_sub(GPU_RUNTIME_OVERHEAD);
     let ram_bytes = usable.saturating_sub(gpu_bytes).saturating_sub(kv_headroom);
     let unified_limit = usable.saturating_sub(kv_headroom);
 
@@ -807,17 +804,11 @@ fn compute_kv_cache_plan(
 
     let total_fp16_kv = kv_per_token_fp16 * context_length as u64;
 
-    // Auto-select Q8 KV when GPU budget is tight:
-    // FP16 KV exceeds 40% of GPU budget, but Q8 KV fits in 25%
-    let kv_quantization = if caps.gpu_bytes > 0
-        && total_fp16_kv > caps.gpu_bytes * 2 / 5
-        && (total_fp16_kv / 2) <= caps.gpu_bytes / 4
-    {
-        tracing::info!(
-            "Auto-selecting Q8 KV: FP16 KV {:.1} GB > 40% of GPU {:.1} GB",
-            total_fp16_kv as f64 / (1u64 << 30) as f64,
-            caps.gpu_bytes as f64 / (1u64 << 30) as f64,
-        );
+    // Auto-select KV quantization when GPU headroom is tight:
+    // If FP16 KV exceeds 500 MB or GPU headroom is < 3 GB, use Q8_0
+    let kv_quantization = if total_fp16_kv > (1u64 << 30) || caps.gpu_bytes < total_fp16_kv + (2 * (1 << 30)) {
+        Some(KvQuantization::Q8_0)
+    } else if total_fp16_kv > (500 * (1 << 20)) {
         Some(KvQuantization::Q8_0)
     } else {
         None
