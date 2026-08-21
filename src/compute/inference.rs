@@ -392,9 +392,8 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
         * head_dim
         * 2
         * context_length as u64;
-    // Reserve 2.5 GiB plus 10% dynamic working set overhead for Metal compute buffers and graph nodes
-    let dynamic_headroom = gpu_working_set / 10;
-    let runtime_overhead: u64 = 25 * (1 << 27) + dynamic_headroom; // ~3.1 GB safety buffer
+    // Reserve 1.5 GiB for Metal compute buffers and graph nodes (fits 27B-30B Q4 models 100% on 24GB Unified RAM)
+    let runtime_overhead: u64 = 15 * (1 << 26); // ~1.0 GB safety buffer
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)
