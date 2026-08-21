@@ -51,7 +51,9 @@ impl ModelManager {
         requested_name: &str,
         requested_ctx: Option<u32>,
     ) -> anyhow::Result<(Arc<std::sync::Mutex<LoadedModel>>, String, GgufInfo)> {
-        let target_context = requested_ctx.unwrap_or(self.default_context);
+        let raw_target = requested_ctx.unwrap_or(self.default_context);
+        // Cap context size to avoid client-side requests blowing past Metal GPU budget
+        let target_context = raw_target.min(self.default_context.max(8192));
 
         // 1. Check if an active model can be reused
         if let Some(ref mut active) = self.active_model {
