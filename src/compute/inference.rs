@@ -396,19 +396,28 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
     let max_memory_limit = (hw.memory.total_bytes as f64 * 0.90) as u64;
     let gpu_working_set = raw_vram.min(max_memory_limit);
 
-    // KV cache on GPU: 2 * layers * kv_heads * head_dim * 2 bytes * context
-    let head_dim = if metadata.num_heads > 0 {
-        metadata.embedding_dim as u64 / metadata.num_heads as u64
+    // KV cache on GPU: for MLA models (like GLM-4 MoE Lite, DeepSeek), KV is compressed (576 dims per token)
+    let arch_lower = metadata.architecture.to_lowercase();
+    let is_mla = arch_lower.contains("glm4moe") || arch_lower.contains("deepseek2") || arch_lower.contains("deepseek3");
+
+    let kv_on_gpu = if is_mla {
+        // 576 bytes per layer * Q8_0 (1 byte/elem) * layers * context
+        576 * metadata.num_layers as u64 * context_length as u64
     } else {
-        0
+        let head_dim = if metadata.num_heads > 0 {
+            metadata.embedding_dim as u64 / metadata.num_heads as u64
+        } else {
+            0
+        };
+        2 * metadata.num_layers as u64
+            * metadata.num_kv_heads as u64
+            * head_dim
+            * 2
+            * context_length as u64
     };
-    let kv_on_gpu = 2 * metadata.num_layers as u64
-        * metadata.num_kv_heads as u64
-        * head_dim
-        * 2
-        * context_length as u64;
+
     // Reserve headroom for Metal compute graph splits, SSM recurrent state buffers, and display compositor
-    let runtime_overhead: u64 = 2 * (1 << 30); // 2.0 GB safety buffer
+    let runtime_overhead: u64 = 1 << 30; // 1.0 GB safety buffer
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)

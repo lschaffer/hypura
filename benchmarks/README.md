@@ -243,3 +243,4 @@ Both expert-streaming and dense FFN-streaming share the same core architecture:
 | 2026-03-22 | Qwen3-Coder-Next-Q4_K_M Q4K | Apple M1 Max 32GB | 45.2 GB | 0.0 GB | 0.0 GB | 2.6 | 2.9 | 1.1x |
 | 2026-08-21 | sha256-9eba2761cf0b88b8bc11a065a7b5b47f1b13ce820e8e492cb1010b450f9ec950 Q4K | Apple M4 Pro 24GB | 17.7 GB | 0.0 GB | 0.0 GB | — | 1.8 | — |
 | 2026-08-21 | sha256-9eba2761cf0b88b8bc11a065a7b5b47f1b13ce820e8e492cb1010b450f9ec950 Q4K | Apple M4 Pro 24GB | 17.7 GB | 0.0 GB | 0.0 GB | — | 8.1 | — |
+| 2026-08-21 | sha256-9eba2761cf0b88b8bc11a065a7b5b47f1b13ce820e8e492cb1010b450f9ec950 Q4K | Apple M4 Pro 24GB | 17.7 GB | 0.0 GB | 0.0 GB | — | 12.5 | — |
