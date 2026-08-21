@@ -25,6 +25,15 @@ pub fn format_chat_prompt(
         return format_qwen_chat_prompt(messages, tools);
     }
 
+    let is_glm = arch.map_or(false, |a| {
+        let l = a.to_lowercase();
+        l.contains("glm")
+    });
+
+    if is_glm {
+        return format_glm_chat_prompt(messages, tools);
+    }
+
     let is_mistral = arch.map_or(false, |a| {
         let l = a.to_lowercase();
         l.contains("mistral") || l.contains("ministral") || l.contains("codestral") || l.contains("nemo")
@@ -253,6 +262,82 @@ fn format_qwen_chat_prompt(
     } else {
         prompt.push_str("<|im_start|>assistant\n");
     }
+    prompt
+}
+
+/// Specialized prompt formatting for GLM-4 / GLM-4 MoE Lite models.
+fn format_glm_chat_prompt(
+    messages: &[ChatMessage],
+    tools: Option<&serde_json::Value>,
+) -> String {
+    let mut prompt = String::new();
+    prompt.push_str("[gMASK]<sop>");
+
+    let system_msg = messages.iter().find(|m| m.role == "system");
+    let base_system = system_msg.map(|m| m.content.as_str());
+
+    let tools_array = tools.and_then(|val| match val {
+        serde_json::Value::Array(arr) if !arr.is_empty() => Some(val),
+        _ => None,
+    });
+
+    if let Some(tools_json) = tools_array {
+        let clean_tools: Vec<&serde_json::Value> = match tools_json {
+            serde_json::Value::Array(arr) => arr
+                .iter()
+                .map(|t| t.get("function").unwrap_or(t))
+                .collect(),
+            _ => vec![tools_json],
+        };
+        let tools_str = serde_json::to_string_pretty(&clean_tools).unwrap_or_default();
+        prompt.push_str("<|system|>\n");
+        if let Some(sys) = base_system {
+            prompt.push_str(sys);
+            prompt.push_str("\n\n");
+        }
+        prompt.push_str("# Tools\n\nYou have access to the following functions:\n```json\n");
+        prompt.push_str(&tools_str);
+        prompt.push_str("\n```\n\nWhen you need to call a function, reply with:\n<tool_call>\n{\"name\": \"function_name\", \"arguments\": {\"arg_name\": \"arg_value\"}}\n</tool_call>\n\nWhen you receive tool responses, summarize and answer the user query directly. Do NOT repeat previous tool calls.");
+    } else if let Some(sys) = base_system {
+        prompt.push_str(&format!("<|system|>\n{sys}"));
+    }
+
+    for msg in messages {
+        if msg.role == "system" {
+            continue;
+        }
+        if msg.role == "tool" {
+            prompt.push_str("<|observation|>\n");
+            prompt.push_str(&msg.content);
+            continue;
+        }
+        match msg.role.as_str() {
+            "user" => {
+                prompt.push_str(&format!("<|user|>\n{}", msg.content));
+            }
+            "assistant" => {
+                prompt.push_str("<|assistant|>\n");
+                if !msg.content.is_empty() {
+                    prompt.push_str(&msg.content);
+                }
+                if let Some(ref tool_calls) = msg.tool_calls {
+                    for tc in tool_calls {
+                        let call_obj = serde_json::json!({
+                            "name": tc.function.name,
+                            "arguments": tc.function.arguments,
+                        });
+                        prompt.push_str(&format!(
+                            "<tool_call>\n{}\n</tool_call>",
+                            serde_json::to_string(&call_obj).unwrap_or_default()
+                        ));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    prompt.push_str("<|assistant|>\n");
     prompt
 }
 
