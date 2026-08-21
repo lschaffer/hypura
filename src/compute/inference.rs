@@ -358,14 +358,15 @@ pub fn generate_from_loaded(
             break;
         }
 
-        if is_eog {
+        // Early stop when a tool call block has been closed
+        if (generated_text.contains("</tool_call>")
+            || generated_text.contains("<tool_call|>")
+            || generated_text.contains("[/TOOL_CALLS]")
+            || generated_text.contains("</function>"))
+            && !generated_text.ends_with("<tool_call>")
+            && !generated_text.ends_with("<function=")
+        {
             break;
-        }
-
-        if !loaded.keep_resident {
-            if let Some(ref state) = loaded.prefetch_state {
-                state.prefetch_all_nvme();
-            }
         }
 
         ctx.decode(&[token_id])?;

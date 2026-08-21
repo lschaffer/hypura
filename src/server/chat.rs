@@ -673,9 +673,10 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
             let after_start = &cleaned_text[start_idx + start_tag.len()..];
             let found_end = after_start.find(end_tag).map(|idx| (idx, end_tag.len())).or_else(|| {
                 if start_tag == "<tool_call>" {
-                    // Handle typos emitted by local models e.g. </tool__call>
+                    // Handle typos emitted by local models e.g. </tool__call> or unclosed tag with valid JSON
                     after_start.find("</tool__call>").map(|idx| (idx, "</tool__call>".len()))
                         .or_else(|| after_start.find("</toolcall>").map(|idx| (idx, "</toolcall>".len())))
+                        .or_else(|| find_matching_brace(after_start).map(|idx| (idx, 0)))
                 } else if start_tag == "<|tool_call|>" || start_tag == "<|tool_call>" {
                     after_start.find("<|im_end|>").map(|idx| (idx, 0))
                         .or_else(|| after_start.find("\n\n").map(|idx| (idx, 0)))
