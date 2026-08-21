@@ -266,10 +266,6 @@ fn try_sparse_moe_mmap(
         return None;
     }
 
-    // All tensors go to GPU tier — mmap handles data.
-    // If the model exceeds Metal's working set, gpu_layers_from_placement will
-    // detect this and return ngl=0 (CPU-only). The OS page cache still works
-    // because only ~2% of pages are active per token.
     let mut assignments = HashMap::new();
     for t in tensors {
         assignments.insert(t.name.clone(), StorageTier::Gpu);
@@ -283,7 +279,7 @@ fn try_sparse_moe_mmap(
         experts_total,
         active_bytes as f64 / (1u64 << 30) as f64,
         total_bytes as f64 / (1u64 << 30) as f64,
-        if fits_gpu { "" } else { " (exceeds GPU, will use CPU-only)" },
+        if fits_gpu { " (100% GPU offload)" } else { " (partial GPU offload up to budget)" },
     );
 
     Some(assignments)

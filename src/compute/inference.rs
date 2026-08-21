@@ -428,21 +428,15 @@ pub fn gpu_layers_from_placement(
     gguf: &GgufFile,
     gpu_budget_bytes: u64,
 ) -> i32 {
-    // SparseMoeMmap: if model fits in GPU, offload all layers. If not, use CPU-only
-    // (ngl=0) and rely on mmap + OS page cache for the sparse active working set.
+    // SparseMoeMmap: if model fits entirely in GPU, offload all layers. If not,
+    // offload as many layers as fit in the GPU budget rather than falling back to CPU-only (ngl=0).
     if plan.inference_mode == InferenceMode::SparseMoeMmap {
         let total_bytes = gguf.total_tensor_bytes();
         if total_bytes <= gpu_budget_bytes {
             let max_layer = gguf.tensors.iter().filter_map(|t| t.layer_index).max().unwrap_or(0);
             return max_layer as i32 + 1 + 1; // all layers + output
-        } else {
-            tracing::info!(
-                "Sparse MoE mmap: model ({:.1} GB) exceeds GPU budget ({:.1} GB), using CPU-only (ngl=0)",
-                total_bytes as f64 / (1u64 << 30) as f64,
-                gpu_budget_bytes as f64 / (1u64 << 30) as f64,
-            );
-            return 0;
         }
+        // Fall through to compute max fitting layers within gpu_budget_bytes below
     }
 
     let expert_streaming = plan.inference_mode == InferenceMode::ExpertStreaming;
