@@ -347,10 +347,42 @@ fn format_mistral_chat_prompt(
     prompt
 }
 
+/// Strip reasoning / thought blocks (<think>...</think>, <thought>...</thought>, etc.) before parsing tool calls
+fn strip_thought_blocks(text: &str) -> String {
+    let mut result = text.to_string();
+    let thought_patterns = [
+        ("<|channel>thought\n", "<channel|>"),
+        ("<|channel>thought", "<channel|>"),
+        ("<|channel|>thought\n", "<|end|>"),
+        ("<|channel|>thought", "<|end|>"),
+        ("<|channel|>thought\n", "<channel|>"),
+        ("<|channel|>thought", "<channel|>"),
+        ("<|channel|>analysis\n", "<|end|>"),
+        ("<|channel|>analysis", "<|end|>"),
+        ("<thought>", "</thought>"),
+        ("<think>", "</think>"),
+    ];
+
+    for (start_tag, end_tag) in thought_patterns {
+        while let Some(start_idx) = result.find(start_tag) {
+            let after_start = &result[start_idx + start_tag.len()..];
+            if let Some(end_idx) = after_start.find(end_tag) {
+                let full_end_idx = start_idx + start_tag.len() + end_idx + end_tag.len();
+                result.replace_range(start_idx..full_end_idx, "");
+            } else {
+                result.replace_range(start_idx..start_idx + start_tag.len(), "");
+            }
+        }
+    }
+    result
+}
+
 /// Parse tool calls and clean message content from the model's raw generated text.
 pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
     let mut tool_calls = Vec::new();
-    let mut cleaned_text = raw_output.to_string();
+    // 0. Clean up thought channels first: <think>...</think>, <thought>...</thought>, etc.
+    // This prevents thinking deliberations/hypothetical examples inside <think> from being parsed as real tool calls.
+    let mut cleaned_text = strip_thought_blocks(raw_output);
 
     // 1. Try parsing GPT-OSS / Harmony tool call syntax:
     // e.g. "to=functions.<name><|channel|>commentary<|message|>{...}<|call|>"
@@ -1001,6 +1033,18 @@ mod tests {
         assert_eq!(tcs[0].function.name, "get_forecast");
         assert_eq!(tcs[0].function.arguments["location"], serde_json::json!("Graz, Austria"));
         assert_eq!(tcs[0].function.arguments["hours"], serde_json::json!(12));
+    }
+
+    #[test]
+    fn test_parse_tool_call_with_thinking_cross_contamination() {
+        let raw = "<think>\nWait, the prompt shows \n<tool_call>\n<function=get_devices_around_position>... twice? ... I'll just make one tool call properly: <function=get_coordinates><parameter=location>Göttingen</parameter></function>\n</think>\n\n<tool_call>\n<function=get_coordinates>\n<parameter=location>\nGöttingen\n</parameter>\n</function>\n</tool_call>";
+        let (content, tool_calls) = parse_tool_calls(raw);
+        assert_eq!(content, "");
+        assert!(tool_calls.is_some());
+        let tcs = tool_calls.unwrap();
+        assert_eq!(tcs.len(), 1);
+        assert_eq!(tcs[0].function.name, "get_coordinates");
+        assert_eq!(tcs[0].function.arguments["location"], serde_json::json!("Göttingen"));
     }
 
     #[test]

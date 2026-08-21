@@ -1,66 +1,61 @@
-Based on Pic 3 (the Hypura implementation) and Pic 1 & Pic 2 (the test run), here are the exact reasons why the problem is still occurring and how to fix it in Hypura:
+The raw log in Pic 3 is extremely illuminating. It reveals the exact three bugs inside the Hypura engine:
 
-Why the Issue Still Happens (3 Flaws in Hypura)
-1. Mistral Prompt Formatter Was Not Updated (Only format_qwen_chat_prompt was changed)
-In Pic 3, the tool response formatting was only implemented in format_qwen_chat_prompt using <|im_start|>user\n<tool_response>....
-The model in your test is ministral3:14b (Mistral / Tekken architecture).
-Ministral does not use Qwen's ChatML template. It is routed to format_mistral_chat_prompt (or a fallback formatter) in src/server/chat.rs, where role: "tool" is still not formatted correctly for Mistral.
-When Ministral receives the tool output without Mistral's native [TOOL_RESULTS] tokens, it ignores the data and restarts from the first tool (getgroupid).
-2. Multi-Token Stop Word Failure in src/compute/inference.rs
-Look at Pic 1 & Pic 2: </assistant> </assistant> is still being emitted in the output.
-Why didn't Hard Token Generation Stop catch </tool_call> or </assistant>?
-</tool_call> and </assistant> are multi-token strings (e.g. ['<', '/tool', '_call', '>']).
-If inference.rs only checks token_id == stop_token_id (single token ID comparison), it will never match multi-token strings.
-In llama.cpp / Rust inference, stop strings must be checked against a sliding text buffer of decoded tokens (or registered in the llama sampling chain).
-3. Ministral 3 Native Tool Template vs. <assistant> Tags
-The model output in your screenshot shows:
-text
-<tool_call>
-{"name": "get_devices_around_position", ...}
-</tool_call>
-</assistant> </assistant>
-The </assistant> tag is coming from Hypura's prompt wrapping. Because Mistral was trained on [INST] / [/INST] rather than <assistant> tags, it gets confused, treats <assistant> as text to complete, and generates closing tags in a loop.
-Exact Solutions for Hypura Engine
-Fix 1: Implement format_mistral_chat_prompt in src/server/chat.rs
-For models containing mistral, ministral, codestral, or nemo:
+1. Bug #1: Hypura Parsed Tool Calls Inside the <think> Block (Cross-Contamination)
+Look at what happened in Pic 3: Inside <think>...</think>, the model was analyzing:
+
+"Wait, the prompt shows \n<tool_call>\n<function=get_devices_around_position>... twice? ... I'll just make one tool call properly: <function=get_coordinates><parameter=location>Göttingen</parameter></function>"
+
+What Hypura did: Hypura's tool parser in src/server/streaming.rs:
+
+Did not strip the <think>...</think> block before parsing.
+Matched <function=get_devices_around_position> from the first thought and <parameter=location>Göttingen</parameter> from the second thought.
+Combined them into get_devices_around_position(location: "Göttingen") ? which caused the Validation Error: Invalid parameter "location" in Pic 2!
+Fix in Hypura (src/server/streaming.rs):
+Strip <think>...</think> before running the tool call regex:
 
 rust
-// For role == "tool" / "tool_response" in Mistral:
-// Mistral Instruct v3 / Tekken format:
-format!("[TOOL_RESULTS] {{\"content\": {}}} [/TOOL_RESULTS]", message.content)
-And for prompt construction:
-
-rust
-// User with Tool Result -> Assistant Turn
-"[INST] [TOOL_RESULTS] " + &tool_content + " [/TOOL_RESULTS] [/INST]"
-If using prompt-based XML tools for Mistral:
-
-rust
-"[INST] TOOL RESULT:\n" + &tool_content + "\n\nSummarize the result and answer the user query. [/INST]"
-Fix 2: Buffer-Based Stop Checking in src/compute/inference.rs
-In generate_from_loaded / generate_blocking, maintain a recent text window and check if it contains the stop string:
-
-rust
-// In your token generation loop in inference.rs:
-let mut generated_text = String::new();
-let stop_sequences = ["</tool_call>", "</tool__call>", "</toolcall>", "</assistant>", "<|im_end|>", "</s>"];
-// On each new token decoded into `piece`:
-generated_text.push_str(&piece);
-for stop_str in &stop_sequences {
-    if generated_text.ends_with(stop_str) || generated_text.contains(stop_str) {
-        // Truncate the stop string if necessary and break generation immediately
-        break;
-    }
-}
-Fix 3: Dynamic Model Routing in src/server/chat.rs
-Ensure ministral models are correctly identified and dispatched:
-
-rust
-if model_name.to_lowercase().contains("qwen") {
-    format_qwen_chat_prompt(&messages)
-} else if model_name.to_lowercase().contains("mistral") || model_name.to_lowercase().contains("ministral") {
-    format_mistral_chat_prompt(&messages)
+// 1. Remove think blocks before searching for tool calls
+let clean_text = if let Some(end_idx) = raw_text.find("</think>") {
+    &raw_text[end_idx + "</think>".len()..]
+} else if raw_text.starts_with("<think>") {
+    "" // Still thinking, no tool calls outside think block yet
 } else {
-    format_generic_chat_prompt(&messages)
+    &raw_text
+};
+// 2. Parse tool calls strictly on clean_text
+2. Bug #2: The Tool Result JSON Was Not Delivered into the Prompt
+Look at what Qwen explicitly wrote in its internal reasoning (Pic 3):
+
+"Wait, the system response shows 'Called tool: get_devices_around_position' with arguments, but no actual data returned yet in the prompt? Ah, the prompt ends right after the tool call block."
+
+Why this happened in Hypura (src/server/chat.rs): When the client sent role: "tool" with the 2924-char JSON result:
+
+Hypura either skipped the role: "tool" message in its prompt builder, or placed the placeholder title ("Called tool: get_devices_around_position...") instead of the actual message.content (the JSON data).
+Because the model saw the tool call was made but saw zero returned data, it assumed it was in a fresh conversation and started over.
+Fix in Hypura (src/server/chat.rs):
+Ensure role: "tool" is rendered with its full JSON content:
+
+rust
+match msg.role.as_str() {
+    "tool" => {
+        // Must insert the actual JSON content inside <tool_response>
+        prompt.push_str(&format!(
+            "<|im_start|>user\n<tool_response>\n{}\n</tool_response><|im_end|>\n",
+            msg.content
+        ));
+    }
+    // ...
 }
-7:59 AM
+3. Bug #3: History Ending with Assistant Turn Instead of Waiting for Final Answer
+Ensure that after appending the <tool_response>, Hypura always appends the assistant generation prompt trigger:
+
+rust
+// At the very end of format_qwen_chat_prompt:
+prompt.push_str("<|im_start|>assistant\n");
+This primes Qwen to immediately summarize the <tool_response> rather than creating new tool calls.
+
+Summary Checklist for Hypura:
+Priority	File	Fix Required
+P0	src/server/streaming.rs	Strip <think>...</think> before running tool call regex matching.
+P0	src/server/chat.rs	Ensure role: "tool" injects msg.content (the JSON data) into <tool_response>.
+P1	src/server/chat.rs	End prompt with `<
