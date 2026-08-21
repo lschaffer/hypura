@@ -1,61 +1,1407 @@
-The raw log in Pic 3 is extremely illuminating. It reveals the exact three bugs inside the Hypura engine:
+[info] | 12:24:31 890ms | Tool result is null: true
+[info] | 12:24:31 891ms | ?? Content length: 1691, Is HTML: false
+[info] | 12:24:31 891ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:31 982ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:31 982ms | Tool result is null: true
+[info] | 12:24:31 985ms | Building text message - Role: ChatRole.assistant, Content: 1692 chars, Type: MessageType.text
+[info] | 12:24:31 985ms | Tool result is null: true
+[info] | 12:24:31 985ms | ?? Content length: 1692, Is HTML: false
+[info] | 12:24:31 986ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 82ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 82ms | Tool result is null: true
+[info] | 12:24:32 88ms | Building text message - Role: ChatRole.assistant, Content: 1693 chars, Type: MessageType.text
+[info] | 12:24:32 88ms | Tool result is null: true
+[info] | 12:24:32 89ms | ?? Content length: 1693, Is HTML: false
+[info] | 12:24:32 90ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 183ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 185ms | Tool result is null: true
+[info] | 12:24:32 187ms | Building text message - Role: ChatRole.assistant, Content: 1694 chars, Type: MessageType.text
+[info] | 12:24:32 187ms | Tool result is null: true
+[info] | 12:24:32 187ms | ?? Content length: 1694, Is HTML: false
+[info] | 12:24:32 187ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 284ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 285ms | Tool result is null: true
+[info] | 12:24:32 292ms | Building text message - Role: ChatRole.assistant, Content: 1703 chars, Type: MessageType.text
+[info] | 12:24:32 293ms | Tool result is null: true
+[info] | 12:24:32 293ms | ?? Content length: 1703, Is HTML: false
+[info] | 12:24:32 294ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 416ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 417ms | Tool result is null: true
+[info] | 12:24:32 419ms | Building text message - Role: ChatRole.assistant, Content: 1704 chars, Type: MessageType.text
+[info] | 12:24:32 419ms | Tool result is null: true
+[info] | 12:24:32 419ms | ?? Content length: 1704, Is HTML: false
+[info] | 12:24:32 419ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 484ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 484ms | Tool result is null: true
+[info] | 12:24:32 487ms | Building text message - Role: ChatRole.assistant, Content: 1712 chars, Type: MessageType.text
+[info] | 12:24:32 488ms | Tool result is null: true
+[info] | 12:24:32 488ms | ?? Content length: 1712, Is HTML: false
+[info] | 12:24:32 489ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 597ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 599ms | Tool result is null: true
+[info] | 12:24:32 601ms | Building text message - Role: ChatRole.assistant, Content: 1713 chars, Type: MessageType.text
+[info] | 12:24:32 601ms | Tool result is null: true
+[info] | 12:24:32 602ms | ?? Content length: 1713, Is HTML: false
+[info] | 12:24:32 602ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 694ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 694ms | Tool result is null: true
+[info] | 12:24:32 696ms | Building text message - Role: ChatRole.assistant, Content: 1714 chars, Type: MessageType.text
+[info] | 12:24:32 697ms | Tool result is null: true
+[info] | 12:24:32 697ms | ?? Content length: 1714, Is HTML: false
+[info] | 12:24:32 697ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 827ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 827ms | Tool result is null: true
+[info] | 12:24:32 829ms | Building text message - Role: ChatRole.assistant, Content: 1716 chars, Type: MessageType.text
+[info] | 12:24:32 829ms | Tool result is null: true
+[info] | 12:24:32 829ms | ?? Content length: 1716, Is HTML: false
+[info] | 12:24:32 829ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:32 917ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:32 917ms | Tool result is null: true
+[info] | 12:24:32 920ms | Building text message - Role: ChatRole.assistant, Content: 1717 chars, Type: MessageType.text
+[info] | 12:24:32 920ms | Tool result is null: true
+[info] | 12:24:32 920ms | ?? Content length: 1717, Is HTML: false
+[info] | 12:24:32 920ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 27ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 27ms | Tool result is null: true
+[info] | 12:24:33 28ms | Building text message - Role: ChatRole.assistant, Content: 1719 chars, Type: MessageType.text
+[info] | 12:24:33 29ms | Tool result is null: true
+[info] | 12:24:33 29ms | ?? Content length: 1719, Is HTML: false
+[info] | 12:24:33 29ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 117ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 117ms | Tool result is null: true
+[info] | 12:24:33 119ms | Building text message - Role: ChatRole.assistant, Content: 1728 chars, Type: MessageType.text
+[info] | 12:24:33 119ms | Tool result is null: true
+[info] | 12:24:33 120ms | ?? Content length: 1728, Is HTML: false
+[info] | 12:24:33 120ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 217ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 217ms | Tool result is null: true
+[info] | 12:24:33 218ms | Building text message - Role: ChatRole.assistant, Content: 1729 chars, Type: MessageType.text
+[info] | 12:24:33 219ms | Tool result is null: true
+[info] | 12:24:33 219ms | ?? Content length: 1729, Is HTML: false
+[info] | 12:24:33 219ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 317ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 317ms | Tool result is null: true
+[info] | 12:24:33 319ms | Building text message - Role: ChatRole.assistant, Content: 1730 chars, Type: MessageType.text
+[info] | 12:24:33 320ms | Tool result is null: true
+[info] | 12:24:33 320ms | ?? Content length: 1730, Is HTML: false
+[info] | 12:24:33 320ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 451ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 452ms | Tool result is null: true
+[info] | 12:24:33 454ms | Building text message - Role: ChatRole.assistant, Content: 1731 chars, Type: MessageType.text
+[info] | 12:24:33 454ms | Tool result is null: true
+[info] | 12:24:33 455ms | ?? Content length: 1731, Is HTML: false
+[info] | 12:24:33 456ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 550ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 551ms | Tool result is null: true
+[info] | 12:24:33 552ms | Building text message - Role: ChatRole.assistant, Content: 1740 chars, Type: MessageType.text
+[info] | 12:24:33 553ms | Tool result is null: true
+[info] | 12:24:33 554ms | ?? Content length: 1740, Is HTML: false
+[info] | 12:24:33 554ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 651ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 651ms | Tool result is null: true
+[info] | 12:24:33 653ms | Building text message - Role: ChatRole.assistant, Content: 1747 chars, Type: MessageType.text
+[info] | 12:24:33 653ms | Tool result is null: true
+[info] | 12:24:33 653ms | ?? Content length: 1747, Is HTML: false
+[info] | 12:24:33 653ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 752ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 752ms | Tool result is null: true
+[info] | 12:24:33 754ms | Building text message - Role: ChatRole.assistant, Content: 1748 chars, Type: MessageType.text
+[info] | 12:24:33 754ms | Tool result is null: true
+[info] | 12:24:33 755ms | ?? Content length: 1748, Is HTML: false
+[info] | 12:24:33 755ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 852ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 852ms | Tool result is null: true
+[info] | 12:24:33 855ms | Building text message - Role: ChatRole.assistant, Content: 1749 chars, Type: MessageType.text
+[info] | 12:24:33 856ms | Tool result is null: true
+[info] | 12:24:33 857ms | ?? Content length: 1749, Is HTML: false
+[info] | 12:24:33 857ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:33 952ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:33 952ms | Tool result is null: true
+[info] | 12:24:33 955ms | Building text message - Role: ChatRole.assistant, Content: 1753 chars, Type: MessageType.text
+[info] | 12:24:33 955ms | Tool result is null: true
+[info] | 12:24:33 956ms | ?? Content length: 1753, Is HTML: false
+[info] | 12:24:33 957ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 51ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 51ms | Tool result is null: true
+[info] | 12:24:34 52ms | Building text message - Role: ChatRole.assistant, Content: 1754 chars, Type: MessageType.text
+[info] | 12:24:34 53ms | Tool result is null: true
+[info] | 12:24:34 53ms | ?? Content length: 1754, Is HTML: false
+[info] | 12:24:34 53ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 152ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 153ms | Tool result is null: true
+[info] | 12:24:34 158ms | Building text message - Role: ChatRole.assistant, Content: 1756 chars, Type: MessageType.text
+[info] | 12:24:34 158ms | Tool result is null: true
+[info] | 12:24:34 159ms | ?? Content length: 1756, Is HTML: false
+[info] | 12:24:34 159ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 285ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 286ms | Tool result is null: true
+[info] | 12:24:34 291ms | Building text message - Role: ChatRole.assistant, Content: 1765 chars, Type: MessageType.text
+[info] | 12:24:34 291ms | Tool result is null: true
+[info] | 12:24:34 293ms | ?? Content length: 1765, Is HTML: false
+[info] | 12:24:34 294ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 385ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 385ms | Tool result is null: true
+[info] | 12:24:34 392ms | Building text message - Role: ChatRole.assistant, Content: 1766 chars, Type: MessageType.text
+[info] | 12:24:34 392ms | Tool result is null: true
+[info] | 12:24:34 393ms | ?? Content length: 1766, Is HTML: false
+[info] | 12:24:34 393ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 487ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 487ms | Tool result is null: true
+[info] | 12:24:34 492ms | Building text message - Role: ChatRole.assistant, Content: 1767 chars, Type: MessageType.text
+[info] | 12:24:34 493ms | Tool result is null: true
+[info] | 12:24:34 494ms | ?? Content length: 1767, Is HTML: false
+[info] | 12:24:34 494ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 587ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 587ms | Tool result is null: true
+[info] | 12:24:34 594ms | Building text message - Role: ChatRole.assistant, Content: 1768 chars, Type: MessageType.text
+[info] | 12:24:34 594ms | Tool result is null: true
+[info] | 12:24:34 595ms | ?? Content length: 1768, Is HTML: false
+[info] | 12:24:34 595ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 685ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 685ms | Tool result is null: true
+[info] | 12:24:34 691ms | Building text message - Role: ChatRole.assistant, Content: 1777 chars, Type: MessageType.text
+[info] | 12:24:34 691ms | Tool result is null: true
+[info] | 12:24:34 692ms | ?? Content length: 1777, Is HTML: false
+[info] | 12:24:34 693ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 787ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 787ms | Tool result is null: true
+[info] | 12:24:34 795ms | Building text message - Role: ChatRole.assistant, Content: 1784 chars, Type: MessageType.text
+[info] | 12:24:34 795ms | Tool result is null: true
+[info] | 12:24:34 797ms | ?? Content length: 1784, Is HTML: false
+[info] | 12:24:34 797ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 886ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 887ms | Tool result is null: true
+[info] | 12:24:34 894ms | Building text message - Role: ChatRole.assistant, Content: 1785 chars, Type: MessageType.text
+[info] | 12:24:34 894ms | Tool result is null: true
+[info] | 12:24:34 895ms | ?? Content length: 1785, Is HTML: false
+[info] | 12:24:34 895ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:34 985ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:34 985ms | Tool result is null: true
+[info] | 12:24:34 991ms | Building text message - Role: ChatRole.assistant, Content: 1786 chars, Type: MessageType.text
+[info] | 12:24:34 991ms | Tool result is null: true
+[info] | 12:24:34 992ms | ?? Content length: 1786, Is HTML: false
+[info] | 12:24:34 992ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 86ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 86ms | Tool result is null: true
+[info] | 12:24:35 88ms | Building text message - Role: ChatRole.assistant, Content: 1790 chars, Type: MessageType.text
+[info] | 12:24:35 88ms | Tool result is null: true
+[info] | 12:24:35 89ms | ?? Content length: 1790, Is HTML: false
+[info] | 12:24:35 89ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 186ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 186ms | Tool result is null: true
+[info] | 12:24:35 188ms | Building text message - Role: ChatRole.assistant, Content: 1791 chars, Type: MessageType.text
+[info] | 12:24:35 188ms | Tool result is null: true
+[info] | 12:24:35 189ms | ?? Content length: 1791, Is HTML: false
+[info] | 12:24:35 189ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 320ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 320ms | Tool result is null: true
+[info] | 12:24:35 322ms | Building text message - Role: ChatRole.assistant, Content: 1793 chars, Type: MessageType.text
+[info] | 12:24:35 323ms | Tool result is null: true
+[info] | 12:24:35 323ms | ?? Content length: 1793, Is HTML: false
+[info] | 12:24:35 325ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 421ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 421ms | Tool result is null: true
+[info] | 12:24:35 425ms | Building text message - Role: ChatRole.assistant, Content: 1802 chars, Type: MessageType.text
+[info] | 12:24:35 425ms | Tool result is null: true
+[info] | 12:24:35 426ms | ?? Content length: 1802, Is HTML: false
+[info] | 12:24:35 426ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 519ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 519ms | Tool result is null: true
+[info] | 12:24:35 521ms | Building text message - Role: ChatRole.assistant, Content: 1803 chars, Type: MessageType.text
+[info] | 12:24:35 521ms | Tool result is null: true
+[info] | 12:24:35 521ms | ?? Content length: 1803, Is HTML: false
+[info] | 12:24:35 522ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 619ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 620ms | Tool result is null: true
+[info] | 12:24:35 622ms | Building text message - Role: ChatRole.assistant, Content: 1804 chars, Type: MessageType.text
+[info] | 12:24:35 622ms | Tool result is null: true
+[info] | 12:24:35 623ms | ?? Content length: 1804, Is HTML: false
+[info] | 12:24:35 623ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 722ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 722ms | Tool result is null: true
+[info] | 12:24:35 726ms | Building text message - Role: ChatRole.assistant, Content: 1805 chars, Type: MessageType.text
+[info] | 12:24:35 727ms | Tool result is null: true
+[info] | 12:24:35 727ms | ?? Content length: 1805, Is HTML: false
+[info] | 12:24:35 727ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 820ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 820ms | Tool result is null: true
+[info] | 12:24:35 824ms | Building text message - Role: ChatRole.assistant, Content: 1814 chars, Type: MessageType.text
+[info] | 12:24:35 824ms | Tool result is null: true
+[info] | 12:24:35 826ms | ?? Content length: 1814, Is HTML: false
+[info] | 12:24:35 826ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:35 924ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:35 924ms | Tool result is null: true
+[info] | 12:24:35 928ms | Building text message - Role: ChatRole.assistant, Content: 1815 chars, Type: MessageType.text
+[info] | 12:24:35 928ms | Tool result is null: true
+[info] | 12:24:35 928ms | ?? Content length: 1815, Is HTML: false
+[info] | 12:24:35 928ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 43ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 43ms | Tool result is null: true
+[info] | 12:24:36 45ms | Building text message - Role: ChatRole.assistant, Content: 1821 chars, Type: MessageType.text
+[info] | 12:24:36 45ms | Tool result is null: true
+[info] | 12:24:36 45ms | ?? Content length: 1821, Is HTML: false
+[info] | 12:24:36 46ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 154ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 154ms | Tool result is null: true
+[info] | 12:24:36 159ms | Building text message - Role: ChatRole.assistant, Content: 1822 chars, Type: MessageType.text
+[info] | 12:24:36 159ms | Tool result is null: true
+[info] | 12:24:36 159ms | ?? Content length: 1822, Is HTML: false
+[info] | 12:24:36 160ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 253ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 253ms | Tool result is null: true
+[info] | 12:24:36 256ms | Building text message - Role: ChatRole.assistant, Content: 1823 chars, Type: MessageType.text
+[info] | 12:24:36 256ms | Tool result is null: true
+[info] | 12:24:36 256ms | ?? Content length: 1823, Is HTML: false
+[info] | 12:24:36 256ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 354ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 355ms | Tool result is null: true
+[info] | 12:24:36 357ms | Building text message - Role: ChatRole.assistant, Content: 1824 chars, Type: MessageType.text
+[info] | 12:24:36 358ms | Tool result is null: true
+[info] | 12:24:36 359ms | ?? Content length: 1824, Is HTML: false
+[info] | 12:24:36 359ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 453ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 453ms | Tool result is null: true
+[info] | 12:24:36 454ms | Building text message - Role: ChatRole.assistant, Content: 1825 chars, Type: MessageType.text
+[info] | 12:24:36 455ms | Tool result is null: true
+[info] | 12:24:36 455ms | ?? Content length: 1825, Is HTML: false
+[info] | 12:24:36 455ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 556ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 556ms | Tool result is null: true
+[info] | 12:24:36 560ms | Building text message - Role: ChatRole.assistant, Content: 1827 chars, Type: MessageType.text
+[info] | 12:24:36 560ms | Tool result is null: true
+[info] | 12:24:36 561ms | ?? Content length: 1827, Is HTML: false
+[info] | 12:24:36 561ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 687ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 687ms | Tool result is null: true
+[info] | 12:24:36 688ms | Building text message - Role: ChatRole.assistant, Content: 1836 chars, Type: MessageType.text
+[info] | 12:24:36 689ms | Tool result is null: true
+[info] | 12:24:36 689ms | ?? Content length: 1836, Is HTML: false
+[info] | 12:24:36 689ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 787ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 787ms | Tool result is null: true
+[info] | 12:24:36 788ms | Building text message - Role: ChatRole.assistant, Content: 1837 chars, Type: MessageType.text
+[info] | 12:24:36 788ms | Tool result is null: true
+[info] | 12:24:36 789ms | ?? Content length: 1837, Is HTML: false
+[info] | 12:24:36 789ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 888ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 888ms | Tool result is null: true
+[info] | 12:24:36 890ms | Building text message - Role: ChatRole.assistant, Content: 1838 chars, Type: MessageType.text
+[info] | 12:24:36 890ms | Tool result is null: true
+[info] | 12:24:36 891ms | ?? Content length: 1838, Is HTML: false
+[info] | 12:24:36 892ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:36 988ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:36 988ms | Tool result is null: true
+[info] | 12:24:36 990ms | Building text message - Role: ChatRole.assistant, Content: 1840 chars, Type: MessageType.text
+[info] | 12:24:36 990ms | Tool result is null: true
+[info] | 12:24:36 990ms | ?? Content length: 1840, Is HTML: false
+[info] | 12:24:36 991ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:37 87ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 87ms | Tool result is null: true
+[info] | 12:24:37 89ms | Building text message - Role: ChatRole.assistant, Content: 1848 chars, Type: MessageType.text
+[info] | 12:24:37 90ms | Tool result is null: true
+[info] | 12:24:37 90ms | ?? Content length: 1848, Is HTML: false
+[info] | 12:24:37 91ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:37 199ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 200ms | Tool result is null: true
+[info] | 12:24:37 202ms | Building text message - Role: ChatRole.assistant, Content: 1849 chars, Type: MessageType.text
+[info] | 12:24:37 202ms | Tool result is null: true
+[info] | 12:24:37 203ms | ?? Content length: 1849, Is HTML: false
+[info] | 12:24:37 203ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:37 298ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 298ms | Tool result is null: true
+[info] | 12:24:37 300ms | Building text message - Role: ChatRole.assistant, Content: 1850 chars, Type: MessageType.text
+[info] | 12:24:37 300ms | Tool result is null: true
+[info] | 12:24:37 301ms | ?? Content length: 1850, Is HTML: false
+[info] | 12:24:37 301ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:37 399ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 399ms | Tool result is null: true
+[info] | 12:24:37 402ms | Building text message - Role: ChatRole.assistant, Content: 1862 chars, Type: MessageType.text
+[info] | 12:24:37 402ms | Tool result is null: true
+[info] | 12:24:37 402ms | ?? Content length: 1862, Is HTML: false
+[info] | 12:24:37 403ms | ?? Content preview: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 
+[info] | 12:24:37 535ms | ?? Ollama chunk has 1 tool call(s) (done=true)
+[info] | 12:24:37 536ms | ?? Ollama stream complete - content length: 1862, accumulated tool calls: 1
+[info] | 12:24:37 536ms | ?? Found 1 native Ollama tool calls
+[info] | 12:24:37 536ms | ?? Tokens: +1956 (cumulative: 1956)
+[info] | 12:24:37 537ms | LLM Response: <think>
+The user wants to find online stations with type "dlu" around the city of Göttingen in a 20 ... (1 tool calls)
+[info] | 12:24:37 537ms | ?? LLM response: tool calls (1) - get_devices_around_position
+[info] | 12:24:37 537ms | Processing 1 tool calls
+[debug] | 12:24:37 537ms | ?? Cleaning response: hideThinkBlocks=true, content length=1862
+[info] | 12:24:37 537ms | ?? Removing <think> blocks from response...
+[info] | 12:24:37 538ms |  Removed 1399 characters of <think> content
+[info] | 12:24:37 545ms | Adding message: assistant - 463 chars - ID: 528cfcfc-964e-49e7-acaa-13a2ed17d9b3
+[info] | 12:24:37 546ms | Replaced streaming placeholder with committed message
+[info] | 12:24:37 546ms |  Added AI tool-calling message to conversation (cleaned: 1862 ? 463 chars)
+[info] | 12:24:37 546ms | Starting tool call handling for 1 tools (iteration 1/5)
+[info] | 12:24:37 547ms | Tool Call: get_devices_around_position with parameters: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:24:37 548ms | ?? Tool call: get_devices_around_position({"detail":1,"fields":"id,name,temperatur","filter":"online and type is dlu","for...)
+[info] | 12:24:37 549ms | ?? Coerced tool arguments to schema for "get_devices_around_position"
+[info] | 12:24:37 551ms | ?? Processing tool: get_devices_around_position with arguments: [detail, fields, filter, format, grpId, km, language, lat, lng, output]
+[info] | 12:24:37 553ms | MultiMCPManager: Calling tool get_devices_around_position
+[info] | 12:24:37 554ms | Routing to Cumulus: get_devices_around_position
+[info] | 12:24:37 566ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 567ms | Tool result is null: true
+[info] | 12:24:37 570ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:24:37 570ms | Tool result is null: true
+[info] | 12:24:37 571ms | ?? Content length: 463, Is HTML: false
+[info] | 12:24:37 571ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:24:37 881ms | ?? Tool result has 1 content items:
+[info] | 12:24:37 881ms |   [0] type="text", mimeType="none", hasData=false, dataLength=0, hasText=true, textLength=2917
+[info] | 12:24:37 882ms | ? ALLOWING text to LLM: 2917 chars
+[info] | 12:24:37 882ms | Tool Success: get_devices_around_position - Success: 1 content items
+[info] | 12:24:37 882ms |  Tool output size: 2917 chars (within limit: 128000 chars)
+[info] | 12:24:37 882ms |  Tool response: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custo...
+[info] | 12:24:37 884ms | Adding message: tool - 210 chars - ID: 4c4a64b4-c7c8-4189-b8dd-628dba81da94
+[info] | 12:24:37 884ms | Total messages now: 4
+[info] | 12:24:37 884ms | ?? Tool execution complete, continuing agentic loop (iteration 1/5)
+[info] | 12:24:37 884ms |    Tool results collected: 1
+[info] | 12:24:37 884ms |    hasToolError check: false
+[info] | 12:24:37 884ms |    Result[0]: isError=false, contentItems=1
+[info] | 12:24:37 884ms | ?? CONTINUING TO NEXT LLM CALL - Tool iteration 1/5
+[info] | 12:24:37 885ms | ?? _processLLMResponse called - messages count: 4, isConversationPrimed: false
+[info] | 12:24:37 885ms | ?? Checking conversation state: primed=false, provider=LLMProvider.ollama, supportsNative=true, messages=4
+[info] | 12:24:37 885ms |  Using simplified warmup for Small Language Model mode
+[info] | 12:24:37 885ms | ?? Dynamically built fresh system message (874 chars)
+[info] | 12:24:37 885ms | ?? Including system prompt for agentic loop (1 system + 3 other = 4 total messages)
+[verbose] | 12:24:37 886ms | LLM Request: Chat completion with 4 messages and 23 tools
+[debug] | 12:24:37 886ms | Workflow: LLM Generation - Requesting completion for: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:24:37 886ms | ?? Enhanced semantic query with last tool: get_devices_around_position
+[info] | 12:24:37 891ms | ?? [Stage 1] Semantic filtering: Query="get online stations with type dlu around city Göttingen in 20 km radius, show id, name, air temperature
+Last tool: get_devices_around_position..."
+[info] | 12:24:37 891ms | ?? Semantic filtering: Query="get online stations with type dlu around city Göttingen in 20 km radius, show id, name, air temperature
+Last tool: get_devices_around_position"
+[debug] | 12:24:37 892ms | ?? Requesting query embedding from server...
+[info] | 12:24:37 901ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:37 901ms | Tool result is null: true
+[info] | 12:24:37 904ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:24:37 904ms | Tool result is null: true
+[info] | 12:24:37 904ms | ?? Content length: 463, Is HTML: false
+[info] | 12:24:37 904ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:24:37 908ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:24:37 908ms | Tool result is null: false
+[info] | 12:24:37 908ms | Tool result content items: 1
+[info] | 12:24:37 908ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:24:37 909ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:24:37 909ms | Rendering tool result with 1 content items
+[info] | 12:24:37 909ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:24:37 910ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:24:37 910ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:24:37 911ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:37 911ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:37 912ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:24:37 912ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:24:37 912ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:24:37 912ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:24:37 925ms | Has downloadable content (images/files): false
+[info] | 12:24:37 926ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:24:37 929ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:37 929ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:37 931ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:24:37 931ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:24:37 932ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:37 935ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[debug] | 12:24:38 84ms |  Received query embedding (dimension: 768)
+[info] | 12:24:38 85ms | ?? [Stage 2 Tool Selector] Starting LLM tool filtering for 14 candidate tools using llm1...
+[info] | 12:24:38 100ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:38 100ms | Tool result is null: true
+[info] | 12:24:38 103ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:24:38 103ms | Tool result is null: true
+[info] | 12:24:38 104ms | ?? Content length: 463, Is HTML: false
+[info] | 12:24:38 104ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:24:38 107ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:24:38 107ms | Tool result is null: false
+[info] | 12:24:38 107ms | Tool result content items: 1
+[info] | 12:24:38 107ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:24:38 107ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:24:38 107ms | Rendering tool result with 1 content items
+[info] | 12:24:38 107ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:24:38 110ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:24:38 110ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:24:38 111ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 112ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 112ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:24:38 112ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:24:38 112ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:24:38 112ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:24:38 112ms | Has downloadable content (images/files): false
+[info] | 12:24:38 114ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:24:38 122ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 122ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 123ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:24:38 123ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 123ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 124ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[debug] | 12:24:38 860ms | No native tool calls, attempting text-based extraction
+[info] | 12:24:38 860ms | Found 0 XML tool call tags
+[info] | 12:24:38 860ms | Parsing LLM response for tool calls. Content length: 64
+[info] | 12:24:38 861ms | FULL LLM CONTENT: ["get_coordinates", "get_devices_around_position", "get_device"]
+[info] | 12:24:38 861ms | Found 0 potential tool call matches in code blocks
+[info] | 12:24:38 861ms | No code block tool calls found, checking for raw JSON...
+[info] | 12:24:38 861ms | Found 0 tool call references in content
+[info] | 12:24:38 861ms | Checking for <|tool_call|> special token syntax...
+[info] | 12:24:38 861ms | No JSON tool calls found, trying plain text parsing...
+[info] | 12:24:38 861ms | Found 0 plain text tool call patterns
+[info] | 12:24:38 861ms | No plain text tool calls found, trying <function=...> syntax parsing...
+[info] | 12:24:38 861ms | Found 0 <function=...> patterns
+[info] | 12:24:38 861ms | Final extracted tool calls: 0
+[info] | 12:24:38 863ms | ?? [Stage 2 Tool Selector] Model returned names: [get_coordinates, get_devices_around_position, get_device] (778ms)
+[info] | 12:24:38 863ms | ? [Stage 2 Tool Selector] Successfully filtered from 14 to 3 tool(s): get_coordinates, get_devices_around_position, get_device
+[info] | 12:24:38 863ms | ?? Prompt sent with 3 tools (get_coordinates, get_device, get_devices_around_position)
+[info] | 12:24:38 863ms | ?? Converted 3 tools for Ollama: [get_coordinates, get_device, get_devices_around_position]
+[info] | 12:24:38 863ms | ?? Sending request to Ollama with 4 messages and 3 tools
+[info] | 12:24:38 876ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:24:38 877ms | Tool result is null: true
+[info] | 12:24:38 880ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:24:38 880ms | Tool result is null: true
+[info] | 12:24:38 880ms | ?? Content length: 463, Is HTML: false
+[info] | 12:24:38 880ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:24:38 882ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:24:38 882ms | Tool result is null: false
+[info] | 12:24:38 882ms | Tool result content items: 1
+[info] | 12:24:38 882ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:24:38 882ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:24:38 883ms | Rendering tool result with 1 content items
+[info] | 12:24:38 883ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:24:38 883ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:24:38 883ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:24:38 884ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 884ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 884ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:24:38 884ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:24:38 885ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:24:38 885ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:24:38 885ms | Has downloadable content (images/files): false
+[info] | 12:24:38 886ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:24:38 887ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 887ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 887ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:24:38 887ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:24:38 889ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:24:38 889ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:24:38 898ms | Building text message - Role: ChatRole.assistant, Content: 0 chars, Type: MessageType.text
+[info] | 12:24:38 899ms | Tool result is null: true
+[info] | 12:25:55 589ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:25:55 589ms | Tool result is null: true
+[info] | 12:25:55 591ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:25:55 591ms | Tool result is null: true
+[info] | 12:25:55 591ms | ?? Content length: 463, Is HTML: false
+[info] | 12:25:55 591ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:25:55 594ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:25:55 594ms | Tool result is null: false
+[info] | 12:25:55 595ms | Tool result content items: 1
+[info] | 12:25:55 595ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:25:55 595ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:25:55 595ms | Rendering tool result with 1 content items
+[info] | 12:25:55 595ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:25:55 596ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:25:55 596ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:25:55 597ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:25:55 597ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:25:55 597ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:25:55 597ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:25:55 598ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:25:55 598ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:25:55 598ms | Has downloadable content (images/files): false
+[info] | 12:25:55 606ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:25:55 606ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:25:55 607ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:25:55 607ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:25:55 607ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:25:55 607ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:25:55 608ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:25:55 615ms | Building text message - Role: ChatRole.assistant, Content: 7 chars, Type: MessageType.text
+[info] | 12:25:55 615ms | Tool result is null: true
+[info] | 12:25:55 615ms | ?? Content length: 7, Is HTML: false
+[info] | 12:25:55 615ms | ?? Content preview: <think>
+[info] | 12:26:00 61ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:00 61ms | Tool result is null: true
+[info] | 12:26:00 63ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:00 64ms | Tool result is null: true
+[info] | 12:26:00 64ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:00 64ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:00 67ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:00 67ms | Tool result is null: false
+[info] | 12:26:00 68ms | Tool result content items: 1
+[info] | 12:26:00 68ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:00 68ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:00 68ms | Rendering tool result with 1 content items
+[info] | 12:26:00 68ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:00 77ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:00 78ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:00 79ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:00 79ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:00 80ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:00 80ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:00 80ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:00 80ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:00 81ms | Has downloadable content (images/files): false
+[info] | 12:26:00 88ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:00 89ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:00 89ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:00 89ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:00 90ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:00 90ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:00 94ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:00 101ms | Building text message - Role: ChatRole.assistant, Content: 8 chars, Type: MessageType.text
+[info] | 12:26:00 101ms | Tool result is null: true
+[info] | 12:26:00 101ms | ?? Content length: 8, Is HTML: false
+[info] | 12:26:00 101ms | ?? Content preview: <think>
 
-1. Bug #1: Hypura Parsed Tool Calls Inside the <think> Block (Cross-Contamination)
-Look at what happened in Pic 3: Inside <think>...</think>, the model was analyzing:
-
-"Wait, the prompt shows \n<tool_call>\n<function=get_devices_around_position>... twice? ... I'll just make one tool call properly: <function=get_coordinates><parameter=location>Göttingen</parameter></function>"
-
-What Hypura did: Hypura's tool parser in src/server/streaming.rs:
-
-Did not strip the <think>...</think> block before parsing.
-Matched <function=get_devices_around_position> from the first thought and <parameter=location>Göttingen</parameter> from the second thought.
-Combined them into get_devices_around_position(location: "Göttingen") ? which caused the Validation Error: Invalid parameter "location" in Pic 2!
-Fix in Hypura (src/server/streaming.rs):
-Strip <think>...</think> before running the tool call regex:
-
-rust
-// 1. Remove think blocks before searching for tool calls
-let clean_text = if let Some(end_idx) = raw_text.find("</think>") {
-    &raw_text[end_idx + "</think>".len()..]
-} else if raw_text.starts_with("<think>") {
-    "" // Still thinking, no tool calls outside think block yet
-} else {
-    &raw_text
-};
-// 2. Parse tool calls strictly on clean_text
-2. Bug #2: The Tool Result JSON Was Not Delivered into the Prompt
-Look at what Qwen explicitly wrote in its internal reasoning (Pic 3):
-
-"Wait, the system response shows 'Called tool: get_devices_around_position' with arguments, but no actual data returned yet in the prompt? Ah, the prompt ends right after the tool call block."
-
-Why this happened in Hypura (src/server/chat.rs): When the client sent role: "tool" with the 2924-char JSON result:
-
-Hypura either skipped the role: "tool" message in its prompt builder, or placed the placeholder title ("Called tool: get_devices_around_position...") instead of the actual message.content (the JSON data).
-Because the model saw the tool call was made but saw zero returned data, it assumed it was in a fresh conversation and started over.
-Fix in Hypura (src/server/chat.rs):
-Ensure role: "tool" is rendered with its full JSON content:
-
-rust
-match msg.role.as_str() {
-    "tool" => {
-        // Must insert the actual JSON content inside <tool_response>
-        prompt.push_str(&format!(
-            "<|im_start|>user\n<tool_response>\n{}\n</tool_response><|im_end|>\n",
-            msg.content
-        ));
-    }
-    // ...
-}
-3. Bug #3: History Ending with Assistant Turn Instead of Waiting for Final Answer
-Ensure that after appending the <tool_response>, Hypura always appends the assistant generation prompt trigger:
-
-rust
-// At the very end of format_qwen_chat_prompt:
-prompt.push_str("<|im_start|>assistant\n");
-This primes Qwen to immediately summarize the <tool_response> rather than creating new tool calls.
-
-Summary Checklist for Hypura:
-Priority	File	Fix Required
-P0	src/server/streaming.rs	Strip <think>...</think> before running tool call regex matching.
-P0	src/server/chat.rs	Ensure role: "tool" injects msg.content (the JSON data) into <tool_response>.
-P1	src/server/chat.rs	End prompt with `<
+[info] | 12:26:04 607ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:04 608ms | Tool result is null: true
+[info] | 12:26:04 610ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:04 610ms | Tool result is null: true
+[info] | 12:26:04 610ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:04 610ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:04 613ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:04 613ms | Tool result is null: false
+[info] | 12:26:04 613ms | Tool result content items: 1
+[info] | 12:26:04 613ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:04 613ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:04 614ms | Rendering tool result with 1 content items
+[info] | 12:26:04 614ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:04 615ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:04 615ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:04 616ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:04 616ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:04 616ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:04 616ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:04 616ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:04 616ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:04 617ms | Has downloadable content (images/files): false
+[info] | 12:26:04 621ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:04 623ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:04 623ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:04 624ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:04 624ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:04 624ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:04 627ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:04 633ms | Building text message - Role: ChatRole.assistant, Content: 11 chars, Type: MessageType.text
+[info] | 12:26:04 634ms | Tool result is null: true
+[info] | 12:26:04 634ms | ?? Content length: 11, Is HTML: false
+[info] | 12:26:04 634ms | ?? Content preview: <think>
+The
+[info] | 12:26:07 267ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:07 268ms | Tool result is null: true
+[info] | 12:26:07 270ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:07 270ms | Tool result is null: true
+[info] | 12:26:07 270ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:07 270ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:07 273ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:07 273ms | Tool result is null: false
+[info] | 12:26:07 273ms | Tool result content items: 1
+[info] | 12:26:07 273ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:07 273ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:07 274ms | Rendering tool result with 1 content items
+[info] | 12:26:07 274ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:07 275ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:07 275ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:07 276ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:07 276ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:07 276ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:07 276ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:07 277ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:07 277ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:07 277ms | Has downloadable content (images/files): false
+[info] | 12:26:07 287ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:07 287ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:07 288ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:07 288ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:07 288ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:07 288ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:07 289ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:07 296ms | Building text message - Role: ChatRole.assistant, Content: 16 chars, Type: MessageType.text
+[info] | 12:26:07 297ms | Tool result is null: true
+[info] | 12:26:07 297ms | ?? Content length: 16, Is HTML: false
+[info] | 12:26:07 297ms | ?? Content preview: <think>
+The user
+[info] | 12:26:10 747ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:10 747ms | Tool result is null: true
+[info] | 12:26:10 748ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:10 748ms | Tool result is null: true
+[info] | 12:26:10 749ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:10 749ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:10 752ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:10 752ms | Tool result is null: false
+[info] | 12:26:10 753ms | Tool result content items: 1
+[info] | 12:26:10 753ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:10 753ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:10 754ms | Rendering tool result with 1 content items
+[info] | 12:26:10 754ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:10 754ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:10 755ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:10 755ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:10 755ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:10 755ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:10 756ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:10 756ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:10 757ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:10 757ms | Has downloadable content (images/files): false
+[info] | 12:26:10 758ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:10 758ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:10 759ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:10 759ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:10 759ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:10 760ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:10 760ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:10 765ms | Building text message - Role: ChatRole.assistant, Content: 22 chars, Type: MessageType.text
+[info] | 12:26:10 765ms | Tool result is null: true
+[info] | 12:26:10 765ms | ?? Content length: 22, Is HTML: false
+[info] | 12:26:10 765ms | ?? Content preview: <think>
+The user wants
+[info] | 12:26:16 84ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:16 85ms | Tool result is null: true
+[info] | 12:26:16 87ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:16 87ms | Tool result is null: true
+[info] | 12:26:16 87ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:16 87ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:16 91ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:16 91ms | Tool result is null: false
+[info] | 12:26:16 91ms | Tool result content items: 1
+[info] | 12:26:16 91ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:16 91ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:16 91ms | Rendering tool result with 1 content items
+[info] | 12:26:16 92ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:16 93ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:16 94ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:16 95ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:16 95ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:16 95ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:16 95ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:16 95ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:16 95ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:16 103ms | Has downloadable content (images/files): false
+[info] | 12:26:16 104ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:16 105ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:16 105ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:16 105ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:16 106ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:16 106ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:16 107ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:16 115ms | Building text message - Role: ChatRole.assistant, Content: 25 chars, Type: MessageType.text
+[info] | 12:26:16 115ms | Tool result is null: true
+[info] | 12:26:16 116ms | ?? Content length: 25, Is HTML: false
+[info] | 12:26:16 116ms | ?? Content preview: <think>
+The user wants to
+[info] | 12:26:21 413ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:21 413ms | Tool result is null: true
+[info] | 12:26:21 415ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:21 415ms | Tool result is null: true
+[info] | 12:26:21 415ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:21 415ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:21 417ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:21 417ms | Tool result is null: false
+[info] | 12:26:21 417ms | Tool result content items: 1
+[info] | 12:26:21 417ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:21 417ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:21 417ms | Rendering tool result with 1 content items
+[info] | 12:26:21 417ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:21 418ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:21 418ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:21 419ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:21 419ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:21 419ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:21 419ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:21 420ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:21 420ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:21 420ms | Has downloadable content (images/files): false
+[info] | 12:26:21 421ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:21 422ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:21 422ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:21 422ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:21 422ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:21 422ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:21 423ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:21 431ms | Building text message - Role: ChatRole.assistant, Content: 30 chars, Type: MessageType.text
+[info] | 12:26:21 431ms | Tool result is null: true
+[info] | 12:26:21 431ms | ?? Content length: 30, Is HTML: false
+[info] | 12:26:21 431ms | ?? Content preview: <think>
+The user wants to find
+[info] | 12:26:23 982ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:23 982ms | Tool result is null: true
+[info] | 12:26:23 983ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:23 983ms | Tool result is null: true
+[info] | 12:26:23 984ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:23 984ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:23 986ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:23 986ms | Tool result is null: false
+[info] | 12:26:23 986ms | Tool result content items: 1
+[info] | 12:26:23 986ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:23 986ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:23 986ms | Rendering tool result with 1 content items
+[info] | 12:26:23 987ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:23 987ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:23 987ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:23 987ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:23 988ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:23 988ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:23 989ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:23 989ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:23 989ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:23 989ms | Has downloadable content (images/files): false
+[info] | 12:26:23 990ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:23 991ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:23 991ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:23 991ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:23 991ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:23 992ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:23 994ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:23 999ms | Building text message - Role: ChatRole.assistant, Content: 37 chars, Type: MessageType.text
+[info] | 12:26:23 999ms | Tool result is null: true
+[info] | 12:26:24 0ms | ?? Content length: 37, Is HTML: false
+[info] | 12:26:24 0ms | ?? Content preview: <think>
+The user wants to find online
+[info] | 12:26:27 185ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:27 185ms | Tool result is null: true
+[info] | 12:26:27 186ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:27 186ms | Tool result is null: true
+[info] | 12:26:27 187ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:27 187ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:27 188ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:27 188ms | Tool result is null: false
+[info] | 12:26:27 188ms | Tool result content items: 1
+[info] | 12:26:27 188ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:27 189ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:27 189ms | Rendering tool result with 1 content items
+[info] | 12:26:27 189ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:27 189ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:27 189ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:27 190ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:27 190ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:27 190ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:27 191ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:27 191ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:27 191ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:27 191ms | Has downloadable content (images/files): false
+[info] | 12:26:27 193ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:27 194ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:27 194ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:27 194ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:27 194ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:27 195ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:27 195ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:27 202ms | Building text message - Role: ChatRole.assistant, Content: 39 chars, Type: MessageType.text
+[info] | 12:26:27 202ms | Tool result is null: true
+[info] | 12:26:27 203ms | ?? Content length: 39, Is HTML: false
+[info] | 12:26:27 203ms | ?? Content preview: <think>
+The user wants to find online D
+[info] | 12:26:33 860ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:33 860ms | Tool result is null: true
+[info] | 12:26:33 860ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:33 860ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:33 861ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:33 861ms | Tool result is null: false
+[info] | 12:26:33 863ms | Tool result content items: 1
+[info] | 12:26:33 863ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:33 863ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:33 863ms | Rendering tool result with 1 content items
+[info] | 12:26:33 863ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:33 864ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:33 864ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:33 864ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:33 864ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:33 865ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:33 865ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:33 865ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:33 866ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:33 866ms | Has downloadable content (images/files): false
+[info] | 12:26:33 867ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:33 867ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:33 868ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:33 868ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:33 868ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:33 869ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:33 869ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:35 903ms | Building text message - Role: ChatRole.assistant, Content: 41 chars, Type: MessageType.text
+[info] | 12:26:35 903ms | Tool result is null: true
+[info] | 12:26:35 903ms | ?? Content length: 41, Is HTML: false
+[info] | 12:26:35 903ms | ?? Content preview: <think>
+The user wants to find online DLU
+[info] | 12:26:41 278ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:41 278ms | Tool result is null: true
+[info] | 12:26:41 278ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:41 278ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:41 281ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:41 281ms | Tool result is null: false
+[info] | 12:26:41 281ms | Tool result content items: 1
+[info] | 12:26:41 283ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:41 283ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:41 283ms | Rendering tool result with 1 content items
+[info] | 12:26:41 283ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:41 283ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:41 283ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:41 284ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:41 284ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:41 285ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:41 285ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:41 285ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:41 285ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:41 285ms | Has downloadable content (images/files): false
+[info] | 12:26:41 286ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:41 287ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:41 287ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:41 287ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:41 287ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:41 287ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:41 289ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:41 294ms | Building text message - Role: ChatRole.assistant, Content: 50 chars, Type: MessageType.text
+[info] | 12:26:41 294ms | Tool result is null: true
+[info] | 12:26:41 294ms | ?? Content length: 50, Is HTML: false
+[info] | 12:26:41 295ms | ?? Content preview: <think>
+The user wants to find online DLU stations
+[info] | 12:26:43 647ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:43 648ms | Tool result is null: true
+[info] | 12:26:43 648ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:43 648ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:43 650ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:43 651ms | Tool result is null: false
+[info] | 12:26:43 651ms | Tool result content items: 1
+[info] | 12:26:43 651ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:43 651ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:43 651ms | Rendering tool result with 1 content items
+[info] | 12:26:43 653ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:43 653ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:43 653ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:43 654ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:43 654ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:43 655ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:43 655ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:43 655ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:43 656ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:43 656ms | Has downloadable content (images/files): false
+[info] | 12:26:43 657ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:43 658ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:43 658ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:43 658ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:43 659ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:43 660ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:43 661ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:43 666ms | Building text message - Role: ChatRole.assistant, Content: 57 chars, Type: MessageType.text
+[info] | 12:26:43 667ms | Tool result is null: true
+[info] | 12:26:43 667ms | ?? Content length: 57, Is HTML: false
+[info] | 12:26:43 667ms | ?? Content preview: <think>
+The user wants to find online DLU stations around
+[info] | 12:26:46 540ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:46 540ms | Tool result is null: true
+[info] | 12:26:46 540ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:46 540ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:46 542ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:46 542ms | Tool result is null: false
+[info] | 12:26:46 543ms | Tool result content items: 1
+[info] | 12:26:46 543ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:46 543ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:46 543ms | Rendering tool result with 1 content items
+[info] | 12:26:46 543ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:46 544ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:46 544ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:46 545ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:46 545ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:46 545ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:46 545ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:46 546ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:46 546ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:46 546ms | Has downloadable content (images/files): false
+[info] | 12:26:46 547ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:46 548ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:46 548ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:46 548ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:46 549ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:46 549ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:46 549ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:46 557ms | Building text message - Role: ChatRole.assistant, Content: 59 chars, Type: MessageType.text
+[info] | 12:26:46 557ms | Tool result is null: true
+[info] | 12:26:46 557ms | ?? Content length: 59, Is HTML: false
+[info] | 12:26:46 557ms | ?? Content preview: <think>
+The user wants to find online DLU stations around G
+[info] | 12:26:55 70ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:26:55 70ms | Tool result is null: true
+[info] | 12:26:55 70ms | ?? Content length: 463, Is HTML: false
+[info] | 12:26:55 70ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:26:55 71ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:26:55 71ms | Tool result is null: false
+[info] | 12:26:55 71ms | Tool result content items: 1
+[info] | 12:26:55 71ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:26:55 73ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:26:55 73ms | Rendering tool result with 1 content items
+[info] | 12:26:55 73ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:26:55 74ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:26:55 74ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:26:55 74ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:55 75ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:55 75ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:26:55 75ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:26:55 76ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:26:55 76ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:26:55 76ms | Has downloadable content (images/files): false
+[info] | 12:26:55 77ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:26:55 78ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:26:55 78ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:55 78ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:26:55 79ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:26:55 79ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:26:55 81ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:26:55 86ms | Building text message - Role: ChatRole.assistant, Content: 61 chars, Type: MessageType.text
+[info] | 12:26:55 87ms | Tool result is null: true
+[info] | 12:26:55 87ms | ?? Content length: 61, Is HTML: false
+[info] | 12:26:55 87ms | ?? Content preview: <think>
+The user wants to find online DLU stations around Göt
+[info] | 12:26:55 890ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:26:55 890ms | Tool result is null: true
+[info] | 12:27:04 190ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:27:04 190ms | Tool result is null: true
+[info] | 12:27:04 194ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:27:04 195ms | Tool result is null: true
+[info] | 12:27:04 195ms | ?? Content length: 463, Is HTML: false
+[info] | 12:27:04 195ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:27:04 198ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:27:04 199ms | Tool result is null: false
+[info] | 12:27:04 199ms | Tool result content items: 1
+[info] | 12:27:04 199ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:27:04 199ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:27:04 200ms | Rendering tool result with 1 content items
+[info] | 12:27:04 200ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:27:04 201ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:27:04 201ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:27:04 202ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:27:04 202ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:04 202ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:27:04 203ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:27:04 204ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:27:04 204ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:27:04 204ms | Has downloadable content (images/files): false
+[info] | 12:27:04 205ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:27:04 206ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:27:04 206ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:04 207ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:27:04 207ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:27:04 207ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:04 211ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:27:04 222ms | Building text message - Role: ChatRole.assistant, Content: 65 chars, Type: MessageType.text
+[info] | 12:27:04 222ms | Tool result is null: true
+[info] | 12:27:04 222ms | ?? Content length: 65, Is HTML: false
+[info] | 12:27:04 222ms | ?? Content preview: <think>
+The user wants to find online DLU stations around Götting
+[info] | 12:27:12 773ms | Building text message - Role: ChatRole.user, Content: 103 chars, Type: MessageType.text
+[info] | 12:27:12 774ms | Tool result is null: true
+[info] | 12:27:12 777ms | Building text message - Role: ChatRole.assistant, Content: 463 chars, Type: MessageType.text
+[info] | 12:27:12 778ms | Tool result is null: true
+[info] | 12:27:12 778ms | ?? Content length: 463, Is HTML: false
+[info] | 12:27:12 778ms | ?? Content preview: <tool_call>
+<function=get_devices_around_position>
+<parameter=lat>
+51.5136
+</parameter>
+<parameter=l
+[info] | 12:27:12 781ms | Building text message - Role: ChatRole.tool, Content: 210 chars, Type: MessageType.text
+[info] | 12:27:12 781ms | Tool result is null: false
+[info] | 12:27:12 781ms | Tool result content items: 1
+[info] | 12:27:12 781ms | This is a TOOL message - content: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: ...
+[info] | 12:27:12 781ms | Message contains tool calls - first 500 chars: Called tool: get_devices_around_position
+Arguments: {detail: 1, fields: id,name,temperatur, filter: online and type is dlu, format: json, grpId: 1, km: 20, language: de, lat: 51.5136, lng: 9.9847, output: text}
+[info] | 12:27:12 782ms | Rendering tool result with 1 content items
+[info] | 12:27:12 782ms | Tool result text: {
+  "success": true,
+  "data": [
+    {
+      "dlu_id": 35,
+      "dlu_name": "DLU",
+      "dlu_custom_name": "Dransfeld",
+      "channels": [
+        {
+          "cha_index": "15",
+          "cha_name...
+[info] | 12:27:12 782ms | Content 0: type="text", hasData=false, dataLength=0, mimeType=null
+[debug] | 12:27:12 782ms | _hasDownloadableContent: Checking 1 content items
+[info] | 12:27:12 783ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:27:12 783ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:12 783ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[debug] | 12:27:12 784ms | _hasDownloadableContent: Checking text content (2917 chars)
+[debug] | 12:27:12 784ms | _hasDownloadableContent: Parsed JSON: _Map<String, dynamic>
+[debug] | 12:27:12 784ms | _hasDownloadableContent: No downloadable content found
+[info] | 12:27:12 784ms | Has downloadable content (images/files): false
+[info] | 12:27:12 785ms | ?? MultimediaMessageWidget: _buildJsonContent called with 2917 characters
+[info] | 12:27:12 786ms | ?? MultimediaMessageWidget: Checking for embedded image in JSON data: _Map<String, dynamic>
+[info] | 12:27:12 786ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:12 787ms | ?? MultimediaMessageWidget: No embedded image found in JSON data
+[info] | 12:27:12 788ms | ?? MultimediaMessageWidget: Checking for embedded file in JSON data: _Map<String, dynamic>
+[info] | 12:27:12 788ms | ?? MultimediaMessageWidget: JSON keys: [success, data, filter_applied, filter_expression, filter_strategy, filter_mode, semantic_model_enabled, semantic_model_name, total_before, total_after, fields_projection_applied, fields_requested, fields_resolved, fields_unmatched, fields_channel_queries, fields_channel_query_condition]
+[info] | 12:27:12 788ms | ?? MultimediaMessageWidget: No embedded file found in JSON data
+[info] | 12:27:12 797ms | Building text message - Role: ChatRole.assistant, Content: 67 chars, Type: MessageType.text
+[info] | 12:27:12 797ms | Tool result is null: true
+[info] | 12:27:12 797ms | ?? Content length: 67, Is HTML: false
+[info] | 12:27:12 797ms | ?? Content preview: <think>
+The user wants to find online DLU stations around Göttingen

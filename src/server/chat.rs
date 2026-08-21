@@ -210,19 +210,25 @@ fn format_qwen_chat_prompt(
         prompt.push_str(&format!("<|im_start|>system\n{sys}<|im_end|>\n"));
     }
 
+    let mut last_was_tool = false;
     for msg in messages {
         if msg.role == "system" {
             continue;
         }
         if msg.role == "tool" {
+            last_was_tool = true;
             prompt.push_str("<|im_start|>user\n<tool_response>\n");
             prompt.push_str(&msg.content);
             prompt.push_str("\n</tool_response><|im_end|>\n");
             continue;
         }
+        last_was_tool = false;
         prompt.push_str(&format!("<|im_start|>{}\n", msg.role));
         if !msg.content.is_empty() {
             prompt.push_str(&msg.content);
+            if !msg.content.ends_with('\n') {
+                prompt.push('\n');
+            }
         }
         if let Some(ref tool_calls) = msg.tool_calls {
             for tc in tool_calls {
@@ -236,13 +242,17 @@ fn format_qwen_chat_prompt(
                         prompt.push_str(&format!("<parameter={k}>\n{val_str}\n</parameter>\n"));
                     }
                 }
-                prompt.push_str("</function>\n</tool_call>");
+                prompt.push_str("</function>\n</tool_call>\n");
             }
         }
         prompt.push_str("<|im_end|>\n");
     }
 
-    prompt.push_str("<|im_start|>assistant\n");
+    if last_was_tool {
+        prompt.push_str("<|im_start|>assistant\n<think>\n\n</think>\n\n");
+    } else {
+        prompt.push_str("<|im_start|>assistant\n");
+    }
     prompt
 }
 
