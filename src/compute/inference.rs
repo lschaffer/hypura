@@ -417,8 +417,8 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
             * context_length as u64
     };
 
-    // Reserve headroom for Metal compute graph splits (110+ splits), SSM recurrent state buffers, and display compositor
-    let runtime_overhead: u64 = 2800 * 1024 * 1024; // 2.8 GB safety buffer
+    // Reserve headroom for Metal compute graph splits (150+ splits on dense models), SSM recurrent state buffers, and display compositor
+    let runtime_overhead: u64 = 3800 * 1024 * 1024; // 3.8 GB safety buffer
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)
