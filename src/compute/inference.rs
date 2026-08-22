@@ -513,7 +513,7 @@ pub fn gpu_layers_from_placement(
             break;
         }
     }
-    let from_capacity = max_fitting + 1;
+    let from_capacity = max_fitting;
 
     from_plan.min(from_capacity)
 }

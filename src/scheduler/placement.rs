@@ -30,11 +30,10 @@ pub fn compute_placement_with_context(
     context_length: u32,
 ) -> anyhow::Result<PlacementPlan> {
     let metadata = ModelMetadata::from_gguf(model)?;
-    // Cap KV headroom context — practical working context size for placement planning
     let context_length = if context_length > 0 {
         context_length.min(metadata.context_length.max(2048))
     } else {
-        metadata.context_length.max(2048).min(4096)
+        8192.min(metadata.context_length.max(2048))
     };
     let capacities = compute_tier_capacities(hardware, &metadata, context_length);
 
