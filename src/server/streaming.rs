@@ -95,15 +95,37 @@ pub fn ndjson_chat_stream(
                 prefix_buffer.push_str(&token.text);
                 let trimmed = prefix_buffer.trim_start();
 
-                // 1. Detect tool calls or reasoning channels early to prevent streaming raw JSON/reasoning to UI
+                // 1. Strip thought channels like <|channel>thought\n...<channel|> or <thought>...</thought> or <think>...</think>
+                if trimmed.starts_with("<|channel>thought")
+                    || trimmed.starts_with("<thought>")
+                    || trimmed.starts_with("<think>")
+                {
+                    if let Some(end_idx) = trimmed
+                        .find("<channel|>")
+                        .map(|i| i + "<channel|>".len())
+                        .or_else(|| trimmed.find("</thought>").map(|i| i + "</thought>".len()))
+                        .or_else(|| trimmed.find("</think>").map(|i| i + "</think>".len()))
+                    {
+                        prefix_buffer = trimmed[end_idx..].trim_start().to_string();
+                    } else {
+                        // Still inside thought channel, continue buffering
+                        continue;
+                    }
+                }
+
+                let trimmed = prefix_buffer.trim_start();
+
+                // 2. Detect tool calls or reasoning channels early to prevent streaming raw JSON/reasoning to UI
                 if trimmed.starts_with("<tool_call")
                     || trimmed.starts_with("<|tool_call")
                     || trimmed.starts_with("```tool_call")
+                    || trimmed.starts_with("```json")
                     || trimmed.starts_with("<atem:function_calls")
                     || trimmed.starts_with("to=functions.")
                     || trimmed.starts_with("[TOOL_CALLS]")
-                    || (trimmed.starts_with('{') && (trimmed.contains("\"name\"") || trimmed.contains("\"function\"")))
+                    || (trimmed.starts_with('{') && (trimmed.contains("\"name\"") || trimmed.contains("\"function\"") || trimmed.contains("\"arguments\"")))
                     || (trimmed.starts_with('[') && trimmed.contains("\"name\""))
+                    || trimmed.starts_with("call:")
                     || (trimmed.starts_with("to=") && !trimmed.starts_with("to=user"))
                     || (trimmed.starts_with("<|start|>assistant to=")
                         && !trimmed.starts_with("<|start|>assistant to=user"))
@@ -113,7 +135,7 @@ pub fn ndjson_chat_stream(
                     continue;
                 }
 
-                // 2. Strip Harmony channel headers like `to=user<|message|>` or `to=user\n`
+                // 3. Strip Harmony channel headers like `to=user<|message|>` or `to=user\n`
                 if let Some(msg_idx) = trimmed.find("<|message|>") {
                     let user_text = &trimmed[msg_idx + "<|message|>".len()..];
                     if !user_text.is_empty() {
@@ -168,13 +190,12 @@ pub fn ndjson_chat_stream(
         tracing::info!("STREAM CHAT RAW RESPONSE: {:?}", full_response);
         let (cleaned_content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
         tracing::info!("STREAM PARSED TOOL CALLS: {:?}, CLEANED CONTENT: {:?}", tool_calls, cleaned_content);
-        let has_tools = tool_calls.is_some();
         let final_chunk = ChatResponseChunk {
             model: model_name,
             created_at: now_rfc3339(),
             message: ChatMessage {
                 role: "assistant".into(),
-                content: if has_tools { String::new() } else { cleaned_content },
+                content: String::new(),
                 tool_calls,
             },
             done: true,

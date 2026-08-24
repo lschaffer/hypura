@@ -355,6 +355,8 @@ pub fn should_stop_early(generated_text: &str, custom_stops: &[String]) -> bool 
         || generated_text.contains("<|start_of_role|>")
         || generated_text.contains("<end_of_turn>")
         || generated_text.contains("<start_of_turn>")
+        || generated_text.contains("<turn|>")
+        || generated_text.contains("<|turn|>")
     {
         return true;
     }
@@ -457,11 +459,11 @@ pub fn generate_from_loaded(
     let prompt_len = tokens.len() as u32;
     anyhow::ensure!(!tokens.is_empty(), "Prompt tokenized to zero tokens");
 
-    // Ensure context is large enough for prompt + generation tokens, but capped by config.n_ctx
-    // and safe headroom to avoid Metal command buffer OOM during iterative multi-turn conversations
-    let max_safe_ctx = config.n_ctx.max(2048);
-    let requested_ctx = (prompt_len + sampling.max_tokens).max(config.n_ctx);
-    let effective_ctx = requested_ctx.min(max_safe_ctx).max(prompt_len + 32);
+    // Dynamic context calculation: ensure adequate headroom for generation beyond the prompt,
+    // scaling up beyond config.n_ctx if large tool outputs are fed into the prompt.
+    let gen_headroom = sampling.max_tokens.min(4096).max(512);
+    let requested_ctx = prompt_len + gen_headroom;
+    let effective_ctx = requested_ctx.max(config.n_ctx);
 
     // Build context — with or without NVMe callback, respecting KV cache quantization
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {
