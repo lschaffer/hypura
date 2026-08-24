@@ -625,10 +625,10 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
 
     let runtime_overhead: u64 = if is_ssm_hybrid {
         // Gated Delta Net and recurrent state buffers create substantial Metal intermediate allocations
-        5400 * 1024 * 1024 // 5.4 GB safety buffer on unified memory
+        5800 * 1024 * 1024 // 5.8 GB safety buffer on unified memory
     } else if hw.memory.total_bytes <= 24 * 1024 * 1024 * 1024 {
-        // On 24 GB machines, macOS WindowServer + system memory pressure requires 4.5 GB safety buffer
-        4500 * 1024 * 1024
+        // On 24 GB machines, macOS WindowServer + system memory pressure requires 4.8 GB safety buffer
+        4800 * 1024 * 1024
     } else {
         3800 * 1024 * 1024
     };

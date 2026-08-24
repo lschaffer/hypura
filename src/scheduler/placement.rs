@@ -143,9 +143,25 @@ fn compute_tier_capacities(
     // but Metal imposes a hard process limit (recommendedMaxWorkingSetSize, e.g. ~17.8 GB on 24 GB Mac).
     let kv_headroom = estimate_kv_bytes(metadata, context_length);
     let metal_safe_limit = gpu_max.min(usable);
+
+    let arch_lower = metadata.architecture.to_lowercase();
+    let is_ssm_hybrid = arch_lower.contains("gemma")
+        || arch_lower.contains("delta")
+        || arch_lower.contains("mamba")
+        || arch_lower.contains("rwkv")
+        || arch_lower.contains("jamba");
+
+    let gpu_overhead = if is_ssm_hybrid {
+        5800 * 1024 * 1024
+    } else if hw.memory.total_bytes <= 24 * 1024 * 1024 * 1024 {
+        4800 * 1024 * 1024
+    } else {
+        GPU_RUNTIME_OVERHEAD
+    };
+
     let gpu_bytes = metal_safe_limit
         .saturating_sub(kv_headroom)
-        .saturating_sub(GPU_RUNTIME_OVERHEAD);
+        .saturating_sub(gpu_overhead);
     let ram_bytes = usable.saturating_sub(gpu_bytes).saturating_sub(kv_headroom);
     let unified_limit = usable.saturating_sub(kv_headroom);
 
