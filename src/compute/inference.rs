@@ -617,7 +617,22 @@ pub fn compute_gpu_budget(hw: &HardwareProfile, metadata: &ModelMetadata, contex
     };
 
     // Reserve headroom for Metal compute graph splits (150+ splits on dense models), SSM recurrent state buffers, and display compositor
-    let runtime_overhead: u64 = 3800 * 1024 * 1024; // 3.8 GB safety buffer
+    let is_ssm_hybrid = arch_lower.contains("gemma")
+        || arch_lower.contains("delta")
+        || arch_lower.contains("mamba")
+        || arch_lower.contains("rwkv")
+        || arch_lower.contains("jamba");
+
+    let runtime_overhead: u64 = if is_ssm_hybrid {
+        // Gated Delta Net and recurrent state buffers create substantial Metal intermediate allocations
+        5400 * 1024 * 1024 // 5.4 GB safety buffer on unified memory
+    } else if hw.memory.total_bytes <= 24 * 1024 * 1024 * 1024 {
+        // On 24 GB machines, macOS WindowServer + system memory pressure requires 4.5 GB safety buffer
+        4500 * 1024 * 1024
+    } else {
+        3800 * 1024 * 1024
+    };
+
     gpu_working_set
         .saturating_sub(kv_on_gpu)
         .saturating_sub(runtime_overhead)
