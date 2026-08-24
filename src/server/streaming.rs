@@ -101,6 +101,9 @@ pub fn ndjson_chat_stream(
                     || trimmed.starts_with("```tool_call")
                     || trimmed.starts_with("<atem:function_calls")
                     || trimmed.starts_with("to=functions.")
+                    || trimmed.starts_with("[TOOL_CALLS]")
+                    || (trimmed.starts_with('{') && (trimmed.contains("\"name\"") || trimmed.contains("\"function\"")))
+                    || (trimmed.starts_with('[') && trimmed.contains("\"name\""))
                     || (trimmed.starts_with("to=") && !trimmed.starts_with("to=user"))
                     || (trimmed.starts_with("<|start|>assistant to=")
                         && !trimmed.starts_with("<|start|>assistant to=user"))
@@ -139,7 +142,9 @@ pub fn ndjson_chat_stream(
                 if prefix_buffer.len() > 30
                     || (!trimmed.starts_with("to=")
                         && !trimmed.starts_with("<|")
-                        && !trimmed.starts_with("<tool"))
+                        && !trimmed.starts_with("<tool")
+                        && !trimmed.starts_with('{')
+                        && !trimmed.starts_with('['))
                 {
                     let chunk = make_chat_chunk(&model_name, prefix_buffer.clone(), false);
                     if tx.send(Ok(chunk)).await.is_err() {
@@ -163,12 +168,13 @@ pub fn ndjson_chat_stream(
         tracing::info!("STREAM CHAT RAW RESPONSE: {:?}", full_response);
         let (cleaned_content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
         tracing::info!("STREAM PARSED TOOL CALLS: {:?}, CLEANED CONTENT: {:?}", tool_calls, cleaned_content);
+        let has_tools = tool_calls.is_some();
         let final_chunk = ChatResponseChunk {
             model: model_name,
             created_at: now_rfc3339(),
             message: ChatMessage {
                 role: "assistant".into(),
-                content: if is_tool_call { String::new() } else { cleaned_content },
+                content: if has_tools { String::new() } else { cleaned_content },
                 tool_calls,
             },
             done: true,

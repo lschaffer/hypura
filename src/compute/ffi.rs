@@ -15,6 +15,8 @@ pub struct SamplingParams {
     pub repeat_last_n: i32,
     pub seed: u32,
     pub max_tokens: u32,
+    #[serde(default)]
+    pub stop_sequences: Vec<String>,
 }
 
 impl Default for SamplingParams {
@@ -28,6 +30,7 @@ impl Default for SamplingParams {
             repeat_last_n: 64,
             seed: 42,
             max_tokens: 512,
+            stop_sequences: Vec::new(),
         }
     }
 }
@@ -136,6 +139,11 @@ impl LlamaModel {
         unsafe { hypura_sys::llama_vocab_is_eog(self.vocab, token) }
     }
 
+    /// Check if a token is a control / special token.
+    pub fn is_control(&self, token: i32) -> bool {
+        unsafe { hypura_sys::llama_vocab_is_control(self.vocab, token) }
+    }
+
     /// Tokenize text into token IDs.
     ///
     /// `add_bos`: ask the tokenizer to add BOS/EOS as appropriate (controlled
@@ -192,7 +200,7 @@ impl LlamaModel {
                 buf.as_mut_ptr() as *mut i8,
                 buf.len() as i32,
                 0,
-                false,
+                true,
             )
         };
 
@@ -205,7 +213,7 @@ impl LlamaModel {
                     buf.as_mut_ptr() as *mut i8,
                     buf.len() as i32,
                     0,
-                    false,
+                    true,
                 )
             };
             buf.truncate(n2.max(0) as usize);

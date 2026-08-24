@@ -251,6 +251,193 @@ pub fn load_model(
     })
 }
 
+/// Helper: find matching closing bracket `]` accounting for strings and nesting
+pub fn find_matching_bracket(s: &str) -> Option<usize> {
+    let start = s.find('[')?;
+    let mut depth = 0;
+    let mut in_string = false;
+    let mut escape = false;
+
+    for (i, c) in s[start..].char_indices() {
+        if escape {
+            escape = false;
+            continue;
+        }
+        if c == '\\' {
+            escape = true;
+            continue;
+        }
+        if c == '"' {
+            in_string = !in_string;
+            continue;
+        }
+        if in_string {
+            continue;
+        }
+        if c == '[' {
+            depth += 1;
+        } else if c == ']' {
+            depth -= 1;
+            if depth == 0 {
+                return Some(start + i + 1);
+            }
+        }
+    }
+    None
+}
+
+/// Helper: find matching closing brace `}` accounting for strings and nesting
+pub fn find_matching_brace(s: &str) -> Option<usize> {
+    let start = s.find('{')?;
+    let mut depth = 0;
+    let mut in_string = false;
+    let mut escape = false;
+
+    for (i, c) in s[start..].char_indices() {
+        if escape {
+            escape = false;
+            continue;
+        }
+        if c == '\\' {
+            escape = true;
+            continue;
+        }
+        if c == '"' {
+            in_string = !in_string;
+            continue;
+        }
+        if in_string {
+            continue;
+        }
+        if c == '{' {
+            depth += 1;
+        } else if c == '}' {
+            depth -= 1;
+            if depth == 0 {
+                return Some(start + i + 1);
+            }
+        }
+    }
+    None
+}
+
+/// Check if generation should terminate early due to stop tokens, turn boundaries, or tool call completion.
+pub fn should_stop_early(generated_text: &str, custom_stops: &[String]) -> bool {
+    // 1. User/client-specified stop sequences
+    for stop in custom_stops {
+        if !stop.is_empty() && generated_text.contains(stop.as_str()) {
+            return true;
+        }
+    }
+
+    // 2. ChatML & Qwen stop / turn boundary tokens
+    if generated_text.contains("<|im_end|>")
+        || generated_text.contains("<|im_start|>")
+        || generated_text.contains("<|endoftext|>")
+        || generated_text.contains("<|eot_id|>")
+    {
+        return true;
+    }
+
+    // 3. Mistral stop / turn boundary tokens
+    if generated_text.contains("</s>")
+        || generated_text.contains("[INST]")
+        || generated_text.contains("[AVAILABLE_TOOLS]")
+        || generated_text.contains("[/TOOL_CALLS]")
+        || generated_text.contains("[TOOL_RESULTS]")
+    {
+        return true;
+    }
+
+    // 4. Granite & Gemma stop / turn boundary tokens
+    if generated_text.contains("<|end_of_text|>")
+        || generated_text.contains("<|end_of_turn|>")
+        || generated_text.contains("<|start_of_role|>")
+        || generated_text.contains("<end_of_turn>")
+        || generated_text.contains("<start_of_turn>")
+    {
+        return true;
+    }
+
+    // 5. Tool call closure tags or complete JSON tool call objects
+    if generated_text.contains("</tool_call>")
+        || generated_text.contains("</tool__call>")
+        || generated_text.contains("</toolcall>")
+        || generated_text.contains("<tool_call|>")
+        || generated_text.contains("</function>")
+        || generated_text.contains("[/TOOL_CALLS]")
+        || (generated_text.contains("<|tool_call|>") && (generated_text.ends_with('}') || generated_text.ends_with(']')))
+    {
+        return true;
+    }
+
+    let trimmed = generated_text.trim_start();
+
+    // Check complete [TOOL_CALLS] [...] syntax
+    if let Some(tc_idx) = trimmed.find("[TOOL_CALLS]") {
+        let after_tc = trimmed[tc_idx + "[TOOL_CALLS]".len()..].trim_start();
+        if after_tc.starts_with('[') {
+            if let Some(bracket_len) = find_matching_bracket(after_tc) {
+                let candidate = &after_tc[..bracket_len];
+                if candidate.contains("\"name\"") && serde_json::from_str::<serde_json::Value>(candidate).is_ok() {
+                    return true;
+                }
+            }
+        } else if after_tc.starts_with('{') {
+            if let Some(brace_len) = find_matching_brace(after_tc) {
+                let candidate = &after_tc[..brace_len];
+                if candidate.contains("\"name\"") && serde_json::from_str::<serde_json::Value>(candidate).is_ok() {
+                    return true;
+                }
+            }
+        }
+    }
+
+    // Check complete raw JSON array [ {"name": ...} ]
+    if trimmed.starts_with('[')
+        && !trimmed.starts_with("[TOOL_CALLS]")
+        && !trimmed.starts_with("[INST]")
+        && !trimmed.starts_with("[AVAILABLE_TOOLS]")
+    {
+        if let Some(bracket_len) = find_matching_bracket(trimmed) {
+            let candidate = &trimmed[..bracket_len];
+            if candidate.contains("\"name\"") && serde_json::from_str::<serde_json::Value>(candidate).is_ok() {
+                return true;
+            }
+        }
+    }
+
+    // Check complete raw JSON object { "name": ... }
+    if trimmed.starts_with('{') {
+        if let Some(brace_len) = find_matching_brace(trimmed) {
+            let candidate = &trimmed[..brace_len];
+            if candidate.contains("\"name\"") && serde_json::from_str::<serde_json::Value>(candidate).is_ok() {
+                return true;
+            }
+        }
+    }
+
+    // 6. Prevent reasoning over-thinking loops (e.g. model finished thinking, gave answer, then reopened <think>)
+    if generated_text.contains("</think>") {
+        if let Some(think_end) = generated_text.find("</think>") {
+            let after_think = &generated_text[think_end + "</think>".len()..];
+            if after_think.contains("<think>") || after_think.contains("<thought>") {
+                return true;
+            }
+        }
+    }
+    if generated_text.contains("</thought>") {
+        if let Some(thought_end) = generated_text.find("</thought>") {
+            let after_thought = &generated_text[thought_end + "</thought>".len()..];
+            if after_thought.contains("<thought>") || after_thought.contains("<think>") {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
 /// Generate text from a pre-loaded model.
 ///
 /// Creates a fresh context + sampler per request. The model itself is reused.
@@ -329,6 +516,7 @@ pub fn generate_from_loaded(
     for _ in 0..sampling.max_tokens {
         let token_id = sampler.sample(&mut ctx, -1);
         let is_eog = loaded.model.is_eog(token_id);
+        let is_control = loaded.model.is_control(token_id);
         let piece = loaded.model.token_to_piece(token_id);
 
         n_generated += 1;
@@ -348,7 +536,7 @@ pub fn generate_from_loaded(
 
         if token_tx
             .send(GeneratedToken {
-                text: piece,
+                text: piece.clone(),
                 token_id,
                 tok_per_sec,
                 is_eog,
@@ -358,14 +546,23 @@ pub fn generate_from_loaded(
             break;
         }
 
-        // Early stop when a tool call block has been closed
-        if (generated_text.contains("</tool_call>")
-            || generated_text.contains("<tool_call|>")
-            || generated_text.contains("[/TOOL_CALLS]")
-            || generated_text.contains("</function>"))
-            && !generated_text.ends_with("<tool_call>")
-            && !generated_text.ends_with("<function=")
+        if is_eog {
+            break;
+        }
+
+        if is_control
+            && (piece.contains("end")
+                || piece.contains("im_end")
+                || piece.contains("eot")
+                || piece.contains("stop")
+                || piece.contains("start_of_role")
+                || piece.contains("im_start")
+                || piece.contains("INST"))
         {
+            break;
+        }
+
+        if should_stop_early(&generated_text, &sampling.stop_sequences) {
             break;
         }
 
@@ -513,7 +710,11 @@ pub fn gpu_layers_from_placement(
             break;
         }
     }
-    let from_capacity = max_fitting;
+    let from_capacity = if max_fitting == max_layer + 1 {
+        max_fitting + 1
+    } else {
+        max_fitting
+    };
 
     from_plan.min(from_capacity)
 }
@@ -555,6 +756,7 @@ pub fn generate_blocking(
     for _ in 0..config.sampling.max_tokens {
         let token_id = sampler.sample(&mut ctx, -1);
         let is_eog = model.is_eog(token_id);
+        let is_control = model.is_control(token_id);
         let piece = model.token_to_piece(token_id);
 
         n_generated += 1;
@@ -573,7 +775,7 @@ pub fn generate_blocking(
         });
 
         let gen_token = GeneratedToken {
-            text: piece,
+            text: piece.clone(),
             token_id,
             tok_per_sec,
             is_eog,
@@ -587,14 +789,19 @@ pub fn generate_blocking(
             break;
         }
 
-        // Early-stop on complete tool calls or closing turn tokens to prevent over-generation loops
-        if generated_text.contains("</tool_call>")
-            || generated_text.contains("</tool__call>")
-            || generated_text.contains("</toolcall>")
-            || generated_text.contains("<|im_end|>")
-            || generated_text.contains("</assistant>")
-            || (generated_text.contains("<|tool_call|>") && generated_text.ends_with('}'))
+        if is_control
+            && (piece.contains("end")
+                || piece.contains("im_end")
+                || piece.contains("eot")
+                || piece.contains("stop")
+                || piece.contains("start_of_role")
+                || piece.contains("im_start")
+                || piece.contains("INST"))
         {
+            break;
+        }
+
+        if should_stop_early(&generated_text, &config.sampling.stop_sequences) {
             break;
         }
 
@@ -1051,6 +1258,7 @@ pub fn generate_with_nvme_scheduling(
     for _ in 0..config.sampling.max_tokens {
         let token_id = sampler.sample(&mut ctx, -1);
         let is_eog = model.is_eog(token_id);
+        let is_control = model.is_control(token_id);
         let piece = model.token_to_piece(token_id);
 
         n_generated += 1;
@@ -1070,7 +1278,7 @@ pub fn generate_with_nvme_scheduling(
 
         if token_tx
             .send(GeneratedToken {
-                text: piece,
+                text: piece.clone(),
                 token_id,
                 tok_per_sec,
                 is_eog,
@@ -1084,14 +1292,19 @@ pub fn generate_with_nvme_scheduling(
             break;
         }
 
-        // Early-stop on complete tool calls or closing turn tokens to prevent over-generation loops
-        if generated_text.contains("</tool_call>")
-            || generated_text.contains("</tool__call>")
-            || generated_text.contains("</toolcall>")
-            || generated_text.contains("<|im_end|>")
-            || generated_text.contains("</assistant>")
-            || (generated_text.contains("<|tool_call|>") && generated_text.ends_with('}'))
+        if is_control
+            && (piece.contains("end")
+                || piece.contains("im_end")
+                || piece.contains("eot")
+                || piece.contains("stop")
+                || piece.contains("start_of_role")
+                || piece.contains("im_start")
+                || piece.contains("INST"))
         {
+            break;
+        }
+
+        if should_stop_early(&generated_text, &config.sampling.stop_sequences) {
             break;
         }
 
@@ -1283,5 +1496,33 @@ mod tests {
         };
         let plan = make_plan(HashMap::new());
         assert_eq!(gpu_layers_from_placement(&plan, &gguf, u64::MAX), 0);
+    }
+
+    #[test]
+    fn test_should_stop_early() {
+        let empty_stops: Vec<String> = vec![];
+        // ChatML / Qwen
+        assert!(should_stop_early("Here is the answer.<|im_end|>", &empty_stops));
+        assert!(should_stop_early("Here is the answer.\n<|im_start|>user", &empty_stops));
+        // Mistral
+        assert!(should_stop_early("Result: 42</s>", &empty_stops));
+        assert!(should_stop_early("Result: 42\n[INST]", &empty_stops));
+        // Granite
+        assert!(should_stop_early("Result: 42<|end_of_text|>", &empty_stops));
+        assert!(should_stop_early("Result: 42<|start_of_role|>user", &empty_stops));
+        // Tool call closure
+        assert!(should_stop_early("<tool_call>\n{\"name\": \"test\", \"arguments\": {}}\n</tool_call>", &empty_stops));
+        // Tool call partial should NOT stop
+        assert!(!should_stop_early("[TOOL_CALLS][\n   {\n     \"name\":", &empty_stops));
+        assert!(!should_stop_early("[TOOL_CALLS][\n   {\n     \"name\": \"get_devices_by_name\",\n     \"arguments\": {", &empty_stops));
+        // Complete [TOOL_CALLS] array should stop
+        assert!(should_stop_early("[TOOL_CALLS][\n   {\n     \"name\": \"get_devices_by_name\",\n     \"arguments\": {}\n   }\n]", &empty_stops));
+        // Thinking loop prevention
+        assert!(should_stop_early("<think>analyzing</think>\nDone!\n<think>wait", &empty_stops));
+        // Custom stop
+        let custom_stops = vec!["### Human:".to_string()];
+        assert!(should_stop_early("Done.\n### Human:", &custom_stops));
+        // Normal text should not stop
+        assert!(!should_stop_early("Here are 3 weather stations with the lowest temperature:\n1. Station A", &empty_stops));
     }
 }

@@ -198,14 +198,20 @@ async fn chat_handler(
     };
 
     let sampling = build_sampling(&req.options);
-    let prompt = format_chat_prompt(&req.messages, req.tools.as_ref(), Some(&info.architecture));
-
     let (token_tx, token_rx) = mpsc::unbounded_channel();
     let (result_tx, result_rx) = oneshot::channel::<GenerationResult>();
     let telemetry = state.telemetry.clone();
+    let req_messages = req.messages;
+    let req_tools = req.tools;
+    let arch = info.architecture.clone();
+    let model_req_name = req.model.clone();
+    let active_model_name = model_name.clone();
 
     tokio::task::spawn_blocking(move || {
         let mut model = loaded.lock().unwrap();
+        let tmpl = model.model.chat_template().unwrap_or_default();
+        let full_hint = format!("{} {} {} {}", arch, active_model_name, model_req_name, tmpl);
+        let prompt = format_chat_prompt(&req_messages, req_tools.as_ref(), Some(&full_hint));
         let params = GenerateFromLoadedParams {
             prompt: &prompt,
             sampling: &sampling,
@@ -260,6 +266,9 @@ fn build_sampling(opts: &GenerateOptions) -> crate::compute::ffi::SamplingParams
     }
     if let Some(seed) = opts.seed {
         s.seed = seed;
+    }
+    if let Some(ref stops) = opts.stop {
+        s.stop_sequences = stops.clone();
     }
     s
 }
