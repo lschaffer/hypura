@@ -15,12 +15,27 @@ use crate::server::ollama_types::*;
 use crate::server::streaming;
 use crate::telemetry::metrics::TelemetryEmitter;
 
+use tower_http::cors::{Any, CorsLayer};
+
 pub struct AppState {
     pub manager: Arc<std::sync::Mutex<ModelManager>>,
     pub telemetry: Arc<TelemetryEmitter>,
 }
 
 pub fn router(state: Arc<AppState>) -> Router {
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::DELETE,
+            axum::http::Method::OPTIONS,
+            axum::http::Method::HEAD,
+        ])
+        .allow_headers(Any)
+        .expose_headers(Any);
+
     Router::new()
         .route("/", get(health_handler))
         .route("/api/version", get(version_handler))
@@ -29,6 +44,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/show", post(show_handler))
         .route("/api/generate", post(generate_handler))
         .route("/api/chat", post(chat_handler))
+        .layer(cors)
         .with_state(state)
 }
 
