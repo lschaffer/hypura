@@ -19,3 +19,12 @@
 .idea/
 .vscode/
 *.code-workspace
+
+# Benchmark results
+benchmarks/results/*
+!benchmarks/results/.gitkeep
+
+# Temporary / Scratch
+nohup.out
+.tests/
+test_*.rs
