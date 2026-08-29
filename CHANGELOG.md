@@ -6,6 +6,13 @@ All notable changes to the **Hypura** project are documented in this file.
 
 ## [0.2.3] - 2026-08-29
 
+### 🎥 Real-World Agent Demos & Verification
+* 📺 **CumulusAI + Hypura: Gemma 4 26B Checks Datalogger Flash Space:** [https://youtu.be/6BRQYrkONqg](https://youtu.be/6BRQYrkONqg)
+  *(Diagnostic check of remote meteorological station datalogger storage via cloud API).*
+* 📺 **CumulusAI + Hypura: Run an Oversized Qwen 3.8 27B on Mac mini M4 Pro – Stations, Reasoning & Charts:** [https://youtu.be/brzBlL2LutQ](https://youtu.be/brzBlL2LutQ)
+  *(Multi-station weather telemetry query, temperature filtering, reasoning, and chart formatting on 24GB Unified RAM).*
+* Detailed benchmark summary available in **[docs/REAL_WORLD_TESTS.md](docs/REAL_WORLD_TESTS.md)**.
+
 ### ✨ Features & Enhancements
 
 #### 1. Full CORS Middleware Support (`src/server/routes.rs`)

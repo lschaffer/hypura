@@ -65,6 +65,16 @@ All benchmarks on **M1 Max, 32 GB unified memory, ~5.1 GB/s NVMe sequential read
 
 **Key takeaway:** For models that fit in memory, Hypura adds zero overhead. For models that don't fit, Hypura is the difference between "runs" and "crashes." Expert-streaming on Mixtral achieves usable interactive speeds by keeping only non-expert tensors on GPU and exploiting MoE sparsity (only 2/8 experts fire per token). Dense FFN-streaming extends this to non-MoE models like Llama 70B. Pool sizes and prefetch depth scale automatically with available memory.
 
+## 🎬 Real-World Agent Demos & Workflows
+
+Hypura has been verified in production agentic workflows (retrieving and analyzing live weather station telemetry and executing multi-turn tool calls):
+
+- 📺 **[CumulusAI + Hypura: Gemma 4 26B Checks Datalogger Flash Space](https://youtu.be/6BRQYrkONqg)** — Live diagnostic check of remote meteorological station storage via cloud API.
+- 📺 **[CumulusAI + Hypura: Run an Oversized Qwen 3.8 27B on Mac mini M4 Pro](https://youtu.be/brzBlL2LutQ)** — Multi-station telemetry queries, temperature filtering, reasoning, and chart formatting on 24GB Unified RAM.
+- 📺 **[Tealkit + Hypura: Cross-Platform Native Agent Workflow](https://youtu.be/i28xrFum3KM)** — Windows 11 client orchestrating multi-step agent actions over LAN to Hypura on Apple Silicon.
+
+See **[docs/REAL_WORLD_TESTS.md](docs/REAL_WORLD_TESTS.md)** for detailed model evaluations and agent benchmarks.
+
 ## Install
 
 Hypura builds from source with Cargo. You'll need Rust 1.75+ and CMake (for the vendored llama.cpp).
