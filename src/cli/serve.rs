@@ -43,6 +43,7 @@ async fn run_async(
     println!("Hypura Server running in dynamic multi-model mode");
     println!("  Endpoint: http://{bind_addr}");
     println!("  Ollama-compatible API: /api/tags, /api/show, /api/chat, /api/generate");
+    println!("  OpenAI-compatible API: /v1/models, /v1/chat/completions, /v1/completions");
 
     let count = {
         let mgr = state.manager.lock().unwrap();
