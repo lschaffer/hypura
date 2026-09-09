@@ -46,10 +46,13 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/show", post(show_handler))
         .route("/api/generate", post(generate_handler))
         .route("/api/chat", post(chat_handler))
-        // OpenAI API
+        // OpenAI API (with /v1/ prefix and without /v1/ for clients with custom base_url handling)
         .route("/v1/models", get(v1_models_handler))
+        .route("/models", get(v1_models_handler))
         .route("/v1/chat/completions", post(v1_chat_completions_handler))
+        .route("/chat/completions", post(v1_chat_completions_handler))
         .route("/v1/completions", post(v1_completions_handler))
+        .route("/completions", post(v1_completions_handler))
         .layer(cors)
         .with_state(state)
 }
