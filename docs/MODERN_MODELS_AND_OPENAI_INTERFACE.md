@@ -1,10 +1,10 @@
-# Modern 14B–36B Model Optimization & OpenAI Interface Integration Guide
+# Modern 14B–30B Model Optimization & OpenAI Interface Integration Guide
 
 ## 1. Executive Summary
 
 This document details:
-1. **Target Architecture & Hardware**: Performance analysis and placement strategies for 14B–36B class models on Apple Silicon Mac mini Pro (M4 Pro / M5 / M6 with 24GB and 32GB Unified Memory).
-2. **2026 Modern Model Landscape (14B–36B)**: Evaluation of dense, hybrid SSM/linear attention, and fine-grained Mixture-of-Experts (MoE) models for agentic reasoning and tool calling.
+1. **Target Architecture & Hardware**: Performance analysis and placement strategies for 14B–30B class models on Apple Silicon Mac mini Pro (M4 Pro / M5 / M6 with 24GB and 32GB Unified Memory).
+2. **2026 Modern Model Landscape (14B–30B)**: Evaluation of dense, hybrid SSM/linear attention, and fine-grained Mixture-of-Experts (MoE) models for agentic reasoning and tool calling.
 3. **OpenAI Compatibility Layer**: Architectural design and implementation specifications for exposing standard OpenAI endpoints (`/v1/chat/completions`, `/v1/completions`, `/v1/models`) with Server-Sent Events (SSE) streaming alongside existing Ollama endpoints.
 
 ---
@@ -21,14 +21,14 @@ On Apple Silicon with Unified Memory Architecture (UMA), both CPU and GPU share 
   * Metal Working Set Limit: ~24.5 GB - 26.0 GB safe GPU buffer
   * Fast NVMe Read: ~5.0 GB/s - 7.5 GB/s sequential
 
-### The 14B–36B "Memory Wall" Challenge
+### The 14B–30B "Memory Wall" Challenge
 * A **14B Q4_K_M** model weighs ~8.4 GB. It fits entirely in GPU memory on both 24GB and 32GB machines, achieving 20–35+ tok/s.
 * A **24B–27B Q4_K_M** model weighs ~14.0–16.5 GB. On a 24GB Mac, adding an 8k–16k context window pushes total allocation beyond 18 GB, threatening OOM crash under vanilla llama.cpp. Hypura's storage-tier placement solves this by offloading non-critical tensors.
-* A **30B–36B Q4_K_M** model weighs ~18.5–22.5 GB. On a 24GB Mac, this strictly requires Hypura's **Dense FFN streaming** or **Sparse MoE / Expert Streaming**. On a 32GB Mac, it fits with a compact context, but large context windows require Hypura's dynamic tiering.
+* A **30B–30B Q4_K_M** model weighs ~18.5–22.5 GB. On a 24GB Mac, this strictly requires Hypura's **Dense FFN streaming** or **Sparse MoE / Expert Streaming**. On a 32GB Mac, it fits with a compact context, but large context windows require Hypura's dynamic tiering.
 
 ---
 
-## 3. Evaluated 2026 Models in the 14B–36B Range
+## 3. Evaluated 2026 Models in the 14B–30B Range
 
 | Model | Architecture | Parameter Count | Quantization & Size | Best Mode on 24GB Mac | Best Mode on 32GB Mac | Expected tok/s & Strengths |
 |---|---|---|---|---|---|---|
@@ -42,7 +42,7 @@ On Apple Silicon with Unified Memory Architecture (UMA), both CPU and GPU share 
 
 ---
 
-## 4. Architectural Improvements for 14B–36B Support
+## 4. Architectural Improvements for 14B–30B Support
 
 ### A. Dynamic FFN Tier Splitting
 Currently, Hypura either puts all FFN tensors on NVMe or keeps them all in RAM/GPU.
