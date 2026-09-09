@@ -462,8 +462,7 @@ pub fn generate_from_loaded(
     // Dynamic context calculation: keep within config.n_ctx bounds to ensure
     // KV cache allocations stay within the reserved Metal working set limit.
     let gen_headroom = sampling.max_tokens.min(4096).max(512);
-    let requested_ctx = prompt_len + gen_headroom;
-    let effective_ctx = requested_ctx.min(config.n_ctx);
+    let effective_ctx = (prompt_len + gen_headroom).min(config.n_ctx).max(1024);
 
     // Build context — with or without NVMe callback, respecting KV cache quantization
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {
@@ -502,10 +501,22 @@ pub fn generate_from_loaded(
         state.prefetch_all_nvme();
     }
 
-    // Process prompt
+    // Process prompt (ensure prompt fits within effective context minus generation headroom)
+    let max_prompt_tokens = effective_ctx.saturating_sub(64) as usize;
+    let eval_tokens = if tokens.len() > max_prompt_tokens {
+        tracing::warn!(
+            "Prompt length ({} tokens) exceeds context limit ({}). Truncating prompt from the beginning...",
+            tokens.len(),
+            max_prompt_tokens
+        );
+        &tokens[tokens.len() - max_prompt_tokens..]
+    } else {
+        &tokens[..]
+    };
+
     let prompt_start = Instant::now();
     let batch_size = config.n_batch as usize;
-    for chunk in tokens.chunks(batch_size) {
+    for chunk in eval_tokens.chunks(batch_size) {
         ctx.decode(chunk)?;
     }
     let prompt_ms = prompt_start.elapsed().as_secs_f64() * 1000.0;
