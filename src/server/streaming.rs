@@ -245,3 +245,240 @@ fn make_chat_chunk(model_name: &str, content: String, done: bool) -> String {
     line.push('\n');
     line
 }
+
+/// Convert a token channel into an SSE streaming body for OpenAI `/v1/chat/completions`.
+pub fn sse_openai_chat_stream(
+    model_name: String,
+    mut token_rx: mpsc::UnboundedReceiver<GeneratedToken>,
+    result_rx: oneshot::Receiver<GenerationResult>,
+    chat_id: String,
+    created: u64,
+) -> Body {
+    let (tx, rx) = mpsc::channel::<Result<String, std::io::Error>>(64);
+
+    tokio::spawn(async move {
+        let mut full_response = String::new();
+        let mut prefix_buffer = String::new();
+        let mut is_tool_call = false;
+        let mut prefix_checked = false;
+
+        // Send initial role chunk
+        let initial_chunk = crate::server::openai_types::OpenAIChatChunkResponse {
+            id: chat_id.clone(),
+            object: "chat.completion.chunk",
+            created,
+            model: model_name.clone(),
+            choices: vec![crate::server::openai_types::OpenAIChatChunkChoice {
+                index: 0,
+                delta: crate::server::openai_types::OpenAIChatDelta {
+                    role: Some("assistant".into()),
+                    content: None,
+                    tool_calls: None,
+                },
+                finish_reason: None,
+            }],
+        };
+        let init_line = format!(
+            "data: {}\n\n",
+            serde_json::to_string(&initial_chunk).unwrap_or_default()
+        );
+        if tx.send(Ok(init_line)).await.is_err() {
+            return;
+        }
+
+        while let Some(token) = token_rx.recv().await {
+            full_response.push_str(&token.text);
+
+            if !prefix_checked {
+                prefix_buffer.push_str(&token.text);
+                let trimmed = prefix_buffer.trim_start();
+
+                // Strip thought channels
+                if trimmed.starts_with("<|channel>thought")
+                    || trimmed.starts_with("<thought>")
+                    || trimmed.starts_with("<think>")
+                {
+                    if let Some(end_idx) = trimmed
+                        .find("<channel|>")
+                        .map(|i| i + "<channel|>".len())
+                        .or_else(|| trimmed.find("</thought>").map(|i| i + "</thought>".len()))
+                        .or_else(|| trimmed.find("</think>").map(|i| i + "</think>".len()))
+                    {
+                        prefix_buffer = trimmed[end_idx..].trim_start().to_string();
+                    } else {
+                        continue;
+                    }
+                }
+
+                let trimmed = prefix_buffer.trim_start();
+
+                if trimmed.starts_with("<tool_call")
+                    || trimmed.starts_with("<|tool_call")
+                    || trimmed.starts_with("```tool_call")
+                    || trimmed.starts_with("```json")
+                    || trimmed.starts_with("<atem:function_calls")
+                    || trimmed.starts_with("to=functions.")
+                    || trimmed.starts_with("[TOOL_CALLS]")
+                    || (trimmed.starts_with('{') && (trimmed.contains("\"name\"") || trimmed.contains("\"function\"") || trimmed.contains("\"arguments\"")))
+                    || (trimmed.starts_with('[') && trimmed.contains("\"name\""))
+                    || trimmed.starts_with("call:")
+                    || (trimmed.starts_with("to=") && !trimmed.starts_with("to=user"))
+                    || (trimmed.starts_with("<|start|>assistant to=")
+                        && !trimmed.starts_with("<|start|>assistant to=user"))
+                {
+                    is_tool_call = true;
+                    prefix_checked = true;
+                    continue;
+                }
+
+                if let Some(msg_idx) = trimmed.find("<|message|>") {
+                    let user_text = &trimmed[msg_idx + "<|message|>".len()..];
+                    if !user_text.is_empty() {
+                        let chunk = make_openai_chat_chunk(&chat_id, &model_name, created, Some(user_text.to_string()), None, None);
+                        if tx.send(Ok(chunk)).await.is_err() {
+                            return;
+                        }
+                    }
+                    prefix_checked = true;
+                    continue;
+                }
+
+                if trimmed.starts_with("to=user\n") {
+                    let user_text = &trimmed["to=user\n".len()..];
+                    if !user_text.is_empty() {
+                        let chunk = make_openai_chat_chunk(&chat_id, &model_name, created, Some(user_text.to_string()), None, None);
+                        if tx.send(Ok(chunk)).await.is_err() {
+                            return;
+                        }
+                    }
+                    prefix_checked = true;
+                    continue;
+                }
+
+                if prefix_buffer.len() > 30
+                    || (!trimmed.starts_with("to=")
+                        && !trimmed.starts_with("<|")
+                        && !trimmed.starts_with("<tool")
+                        && !trimmed.starts_with('{')
+                        && !trimmed.starts_with('['))
+                {
+                    let chunk = make_openai_chat_chunk(&chat_id, &model_name, created, Some(prefix_buffer.clone()), None, None);
+                    if tx.send(Ok(chunk)).await.is_err() {
+                        return;
+                    }
+                    prefix_checked = true;
+                }
+                continue;
+            }
+
+            if !is_tool_call {
+                let chunk = make_openai_chat_chunk(&chat_id, &model_name, created, Some(token.text), None, None);
+                if tx.send(Ok(chunk)).await.is_err() {
+                    return;
+                }
+            }
+        }
+
+        let _ = result_rx.await;
+        let (_cleaned_content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
+
+        if let Some(calls) = tool_calls {
+            let openai_calls: Vec<crate::server::openai_types::OpenAIToolCall> = calls
+                .into_iter()
+                .enumerate()
+                .map(|(i, tc)| crate::server::openai_types::OpenAIToolCall {
+                    id: tc.id.unwrap_or_else(|| format!("call_{}_{}", chat_id, i)),
+                    call_type: "function".into(),
+                    function: crate::server::openai_types::OpenAIFunctionCall {
+                        name: tc.function.name,
+                        arguments: serde_json::to_string(&tc.function.arguments).unwrap_or_default(),
+                    },
+                })
+                .collect();
+
+            let tool_chunk = make_openai_chat_chunk(&chat_id, &model_name, created, None, Some(openai_calls), Some("tool_calls".into()));
+            let _ = tx.send(Ok(tool_chunk)).await;
+        } else {
+            let finish_chunk = make_openai_chat_chunk(&chat_id, &model_name, created, None, None, Some("stop".into()));
+            let _ = tx.send(Ok(finish_chunk)).await;
+        }
+
+        let _ = tx.send(Ok("data: [DONE]\n\n".into())).await;
+    });
+
+    Body::from_stream(ReceiverStream::new(rx))
+}
+
+fn make_openai_chat_chunk(
+    chat_id: &str,
+    model_name: &str,
+    created: u64,
+    content: Option<String>,
+    tool_calls: Option<Vec<crate::server::openai_types::OpenAIToolCall>>,
+    finish_reason: Option<String>,
+) -> String {
+    let chunk = crate::server::openai_types::OpenAIChatChunkResponse {
+        id: chat_id.to_string(),
+        object: "chat.completion.chunk",
+        created,
+        model: model_name.to_string(),
+        choices: vec![crate::server::openai_types::OpenAIChatChunkChoice {
+            index: 0,
+            delta: crate::server::openai_types::OpenAIChatDelta {
+                role: None,
+                content,
+                tool_calls,
+            },
+            finish_reason,
+        }],
+    };
+    format!("data: {}\n\n", serde_json::to_string(&chunk).unwrap_or_default())
+}
+
+/// Convert a token channel into an SSE streaming body for OpenAI `/v1/completions`.
+pub fn sse_openai_completion_stream(
+    model_name: String,
+    mut token_rx: mpsc::UnboundedReceiver<GeneratedToken>,
+    result_rx: oneshot::Receiver<GenerationResult>,
+    completion_id: String,
+    created: u64,
+) -> Body {
+    let (tx, rx) = mpsc::channel::<Result<String, std::io::Error>>(64);
+
+    tokio::spawn(async move {
+        while let Some(token) = token_rx.recv().await {
+            let chunk = crate::server::openai_types::OpenAICompletionChunkResponse {
+                id: completion_id.clone(),
+                object: "text_completion",
+                created,
+                model: model_name.clone(),
+                choices: vec![crate::server::openai_types::OpenAICompletionChunkChoice {
+                    index: 0,
+                    text: token.text,
+                    finish_reason: None,
+                }],
+            };
+            let line = format!("data: {}\n\n", serde_json::to_string(&chunk).unwrap_or_default());
+            if tx.send(Ok(line)).await.is_err() {
+                return;
+            }
+        }
+
+        let _ = result_rx.await;
+        let final_chunk = crate::server::openai_types::OpenAICompletionChunkResponse {
+            id: completion_id,
+            object: "text_completion",
+            created,
+            model: model_name,
+            choices: vec![crate::server::openai_types::OpenAICompletionChunkChoice {
+                index: 0,
+                text: String::new(),
+                finish_reason: Some("stop".into()),
+            }],
+        };
+        let _ = tx.send(Ok(format!("data: {}\n\n", serde_json::to_string(&final_chunk).unwrap_or_default()))).await;
+        let _ = tx.send(Ok("data: [DONE]\n\n".into())).await;
+    });
+
+    Body::from_stream(ReceiverStream::new(rx))
+}

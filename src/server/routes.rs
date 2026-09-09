@@ -12,6 +12,7 @@ use crate::compute::inference::{GenerateFromLoadedParams, GenerationResult};
 use crate::server::chat::format_chat_prompt;
 use crate::server::manager::ModelManager;
 use crate::server::ollama_types::*;
+use crate::server::openai_types::*;
 use crate::server::streaming;
 use crate::telemetry::metrics::TelemetryEmitter;
 
@@ -38,12 +39,17 @@ pub fn router(state: Arc<AppState>) -> Router {
 
     Router::new()
         .route("/", get(health_handler))
+        // Ollama API
         .route("/api/version", get(version_handler))
         .route("/api/tags", get(tags_handler))
         .route("/api/ps", get(ps_handler))
         .route("/api/show", post(show_handler))
         .route("/api/generate", post(generate_handler))
         .route("/api/chat", post(chat_handler))
+        // OpenAI API
+        .route("/v1/models", get(v1_models_handler))
+        .route("/v1/chat/completions", post(v1_chat_completions_handler))
+        .route("/v1/completions", post(v1_completions_handler))
         .layer(cors)
         .with_state(state)
 }
@@ -378,4 +384,327 @@ fn format_parameter_size(params: u64) -> String {
     } else {
         format!("{params}")
     }
+}
+
+// ── OpenAI V1 Handlers ──
+
+async fn v1_models_handler(State(state): State<Arc<AppState>>) -> Json<OpenAIModelList> {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+
+    let models = {
+        let mut manager = state.manager.lock().unwrap();
+        manager.registry.refresh();
+        manager
+            .registry
+            .list_models()
+            .into_iter()
+            .map(|m| OpenAIModelEntry {
+                id: m.name,
+                object: "model",
+                created: now,
+                owned_by: "hypura",
+            })
+            .collect()
+    };
+
+    Json(OpenAIModelList {
+        object: "list",
+        data: models,
+    })
+}
+
+async fn v1_chat_completions_handler(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<OpenAIChatCompletionRequest>,
+) -> Response {
+    let _request_start = Instant::now();
+    let created = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let chat_id = format!("chatcmpl-{}", uuid_simple());
+
+    let (loaded, model_name, info) = {
+        let mut manager = state.manager.lock().unwrap();
+        match manager.get_or_load(&req.model, None) {
+            Ok(res) => res,
+            Err(e) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(serde_json::json!({
+                        "error": {
+                            "message": e.to_string(),
+                            "type": "invalid_request_error",
+                            "code": "model_not_found"
+                        }
+                    })),
+                )
+                    .into_response();
+            }
+        }
+    };
+
+    let mut sampling = crate::compute::ffi::SamplingParams::default();
+    if let Some(t) = req.temperature {
+        sampling.temperature = t;
+    }
+    if let Some(p) = req.top_p {
+        sampling.top_p = p;
+    }
+    if let Some(m) = req.max_tokens {
+        sampling.max_tokens = m;
+    }
+    if let Some(ref stops) = req.stop {
+        sampling.stop_sequences = stops.clone();
+    }
+    if let Some(seed) = req.seed {
+        sampling.seed = seed;
+    }
+    if let Some(rp) = req.presence_penalty {
+        sampling.repeat_penalty = rp;
+    }
+
+    // Convert OpenAIChatMessage to internal ChatMessage
+    let internal_messages: Vec<ChatMessage> = req
+        .messages
+        .into_iter()
+        .map(|m| ChatMessage {
+            role: m.role,
+            content: m.content.unwrap_or_default(),
+            tool_calls: m.tool_calls.map(|tcs| {
+                tcs.into_iter()
+                    .map(|tc| ToolCall {
+                        id: Some(tc.id),
+                        call_type: Some(tc.call_type),
+                        function: FunctionCall {
+                            name: tc.function.name,
+                            arguments: serde_json::from_str(&tc.function.arguments)
+                                .unwrap_or_else(|_| serde_json::Value::String(tc.function.arguments)),
+                        },
+                    })
+                    .collect()
+            }),
+        })
+        .collect();
+
+    let (token_tx, token_rx) = mpsc::unbounded_channel();
+    let (result_tx, result_rx) = oneshot::channel::<GenerationResult>();
+    let telemetry = state.telemetry.clone();
+    let req_tools = req.tools;
+    let arch = info.architecture.clone();
+    let model_req_name = req.model.clone();
+    let active_model_name = model_name.clone();
+
+    tokio::task::spawn_blocking(move || {
+        let mut model = loaded.lock().unwrap();
+        let tmpl = model.model.chat_template().unwrap_or_default();
+        let full_hint = format!("{} {} {} {}", arch, active_model_name, model_req_name, tmpl);
+        let prompt = format_chat_prompt(&internal_messages, req_tools.as_ref(), Some(&full_hint));
+        let params = GenerateFromLoadedParams {
+            prompt: &prompt,
+            sampling: &sampling,
+            token_tx,
+            telemetry,
+        };
+        let result = crate::compute::inference::generate_from_loaded(&mut model, params);
+        match result {
+            Ok(gen_result) => {
+                let _ = result_tx.send(gen_result);
+            }
+            Err(e) => {
+                tracing::error!("OpenAI Chat generation error: {e}");
+            }
+        }
+    });
+
+    if req.stream {
+        let body = streaming::sse_openai_chat_stream(
+            model_name,
+            token_rx,
+            result_rx,
+            chat_id,
+            created,
+        );
+        (
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "text/event-stream")],
+            body,
+        )
+            .into_response()
+    } else {
+        let mut full_response = String::new();
+        let mut rx = token_rx;
+        while let Some(token) = rx.recv().await {
+            full_response.push_str(&token.text);
+        }
+        let result = result_rx.await.ok();
+        let (content, tool_calls) = crate::server::chat::parse_tool_calls(&full_response);
+
+        let openai_tool_calls = tool_calls.map(|tcs| {
+            tcs.into_iter()
+                .enumerate()
+                .map(|(i, tc)| OpenAIToolCall {
+                    id: tc.id.unwrap_or_else(|| format!("call_{}_{}", chat_id, i)),
+                    call_type: "function".into(),
+                    function: OpenAIFunctionCall {
+                        name: tc.function.name,
+                        arguments: serde_json::to_string(&tc.function.arguments).unwrap_or_default(),
+                    },
+                })
+                .collect()
+        });
+
+        let prompt_tokens = result.as_ref().map(|r| r.prompt_tokens).unwrap_or(0);
+        let completion_tokens = result.as_ref().map(|r| r.tokens_generated).unwrap_or(0);
+
+        let resp = OpenAIChatCompletionResponse {
+            id: chat_id,
+            object: "chat.completion",
+            created,
+            model: model_name,
+            choices: vec![OpenAIChatChoice {
+                index: 0,
+                message: OpenAIChatMessage {
+                    role: "assistant".into(),
+                    content: Some(content),
+                    tool_calls: openai_tool_calls,
+                    tool_call_id: None,
+                },
+                finish_reason: Some("stop".into()),
+            }],
+            usage: OpenAIUsage {
+                prompt_tokens,
+                completion_tokens,
+                total_tokens: prompt_tokens + completion_tokens,
+            },
+        };
+
+        Json(resp).into_response()
+    }
+}
+
+async fn v1_completions_handler(
+    State(state): State<Arc<AppState>>,
+    Json(req): Json<OpenAICompletionRequest>,
+) -> Response {
+    let _request_start = Instant::now();
+    let created = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let completion_id = format!("cmpl-{}", uuid_simple());
+
+    let (loaded, model_name, _info) = {
+        let mut manager = state.manager.lock().unwrap();
+        match manager.get_or_load(&req.model, None) {
+            Ok(res) => res,
+            Err(e) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(serde_json::json!({
+                        "error": {
+                            "message": e.to_string(),
+                            "type": "invalid_request_error",
+                            "code": "model_not_found"
+                        }
+                    })),
+                )
+                    .into_response();
+            }
+        }
+    };
+
+    let mut sampling = crate::compute::ffi::SamplingParams::default();
+    if let Some(t) = req.temperature {
+        sampling.temperature = t;
+    }
+    if let Some(p) = req.top_p {
+        sampling.top_p = p;
+    }
+    if let Some(m) = req.max_tokens {
+        sampling.max_tokens = m;
+    }
+    if let Some(ref stops) = req.stop {
+        sampling.stop_sequences = stops.clone();
+    }
+
+    let prompt = req.prompt;
+    let (token_tx, token_rx) = mpsc::unbounded_channel();
+    let (result_tx, result_rx) = oneshot::channel::<GenerationResult>();
+    let telemetry = state.telemetry.clone();
+
+    tokio::task::spawn_blocking(move || {
+        let mut model = loaded.lock().unwrap();
+        let params = GenerateFromLoadedParams {
+            prompt: &prompt,
+            sampling: &sampling,
+            token_tx,
+            telemetry,
+        };
+        let result = crate::compute::inference::generate_from_loaded(&mut model, params);
+        match result {
+            Ok(gen_result) => {
+                let _ = result_tx.send(gen_result);
+            }
+            Err(e) => {
+                tracing::error!("OpenAI Completion error: {e}");
+            }
+        }
+    });
+
+    if req.stream {
+        let body = streaming::sse_openai_completion_stream(
+            model_name,
+            token_rx,
+            result_rx,
+            completion_id,
+            created,
+        );
+        (
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "text/event-stream")],
+            body,
+        )
+            .into_response()
+    } else {
+        let mut full_response = String::new();
+        let mut rx = token_rx;
+        while let Some(token) = rx.recv().await {
+            full_response.push_str(&token.text);
+        }
+        let result = result_rx.await.ok();
+        let prompt_tokens = result.as_ref().map(|r| r.prompt_tokens).unwrap_or(0);
+        let completion_tokens = result.as_ref().map(|r| r.tokens_generated).unwrap_or(0);
+
+        let resp = OpenAICompletionResponse {
+            id: completion_id,
+            object: "text_completion",
+            created,
+            model: model_name,
+            choices: vec![OpenAICompletionChoice {
+                index: 0,
+                text: full_response,
+                finish_reason: Some("stop".into()),
+            }],
+            usage: OpenAIUsage {
+                prompt_tokens,
+                completion_tokens,
+                total_tokens: prompt_tokens + completion_tokens,
+            },
+        };
+
+        Json(resp).into_response()
+    }
+}
+
+fn uuid_simple() -> String {
+    use std::time::SystemTime;
+    let nanos = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    format!("{:x}", nanos)
 }

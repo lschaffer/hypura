@@ -110,27 +110,72 @@ hypura inspect ./model.gguf
 
 Start with `--max-tokens 10` on untested models before scaling up.
 
-## Ollama-compatible server
+## HTTP Server (Ollama & OpenAI Compatible)
 
-Hypura exposes an Ollama-compatible HTTP API, making it a drop-in replacement for any tool that talks to Ollama — including [OpenClaw](https://github.com/openclaw/openclaw).
+Hypura exposes both an **Ollama-compatible** and an **OpenAI-compatible (`/v1/*`)** HTTP API, making it a drop-in replacement for tools like [OpenClaw](https://github.com/openclaw/openclaw), [Cursor](https://www.cursor.com), [Cline](https://github.com/cline/cline), [Continue.dev](https://continue.dev), LangChain, and standard OpenAI SDKs.
 
 ```sh
 hypura serve ./model.gguf
-# Hypura serving Mixtral 8x7B Instruct v0.1
+# Hypura serving model
 #   Endpoint: http://127.0.0.1:8080
-#   Ollama-compatible API: /api/generate, /api/chat, /api/tags
+#   Ollama API: /api/generate, /api/chat, /api/tags
+#   OpenAI API: /v1/models, /v1/chat/completions, /v1/completions
 ```
 
-### Endpoints
+### Supported API Endpoints
 
-| Endpoint | Description |
-|---|---|
-| `GET /` | Health check |
-| `GET /api/tags` | List loaded model |
-| `GET /api/version` | Server version |
-| `POST /api/show` | Model metadata |
-| `POST /api/generate` | Text completion (streaming NDJSON or single response) |
-| `POST /api/chat` | Chat completion (streaming NDJSON or single response) |
+| Endpoint | Standard | Description |
+|---|---|---|
+| `GET /` | Common | Health check |
+| `GET /v1/models` | OpenAI | List loaded and registered models |
+| `POST /v1/chat/completions` | OpenAI | Chat completions (JSON response or SSE streaming with `stream: true`), tool calls |
+| `POST /v1/completions` | OpenAI | Prompt completions (JSON response or SSE streaming) |
+| `GET /api/tags` | Ollama | List available models |
+| `GET /api/version` | Ollama | Server version |
+| `GET /api/ps` | Ollama | Active model memory status |
+| `POST /api/show` | Ollama | Model metadata |
+| `POST /api/generate` | Ollama | Text completion (streaming NDJSON or single response) |
+| `POST /api/chat` | Ollama | Chat completion (streaming NDJSON or single response) |
+
+---
+
+### Usage with OpenAI Python / TypeScript SDK
+
+You can use the official OpenAI SDK by pointing `base_url` to Hypura:
+
+#### Python
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://127.0.0.1:8080/v1",
+    api_key="hypura", # Any string
+)
+
+response = client.chat.completions.create(
+    model="default",
+    messages=[{"role": "user", "content": "Explain storage-tier inference in one paragraph."}],
+    stream=True,
+)
+
+for chunk in response:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="", flush=True)
+print()
+```
+
+#### cURL (OpenAI Chat Completion with Streaming)
+```sh
+curl http://127.0.0.1:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "default",
+    "messages": [{"role": "user", "content": "Hello, Hypura!"}],
+    "stream": true
+  }'
+```
+
+---
 
 ### Usage with OpenClaw
 
@@ -155,7 +200,7 @@ Or via the CLI:
 openclaw config set models.providers.ollama.baseUrl "http://127.0.0.1:8080"
 ```
 
-Hypura speaks native Ollama protocol (`/api/chat` with NDJSON streaming), so no compatibility shims are needed.
+---
 
 ### Server options
 
