@@ -459,11 +459,11 @@ pub fn generate_from_loaded(
     let prompt_len = tokens.len() as u32;
     anyhow::ensure!(!tokens.is_empty(), "Prompt tokenized to zero tokens");
 
-    // Dynamic context calculation: ensure adequate headroom for generation beyond the prompt,
-    // scaling up beyond config.n_ctx if large tool outputs are fed into the prompt.
+    // Dynamic context calculation: keep within config.n_ctx bounds to ensure
+    // KV cache allocations stay within the reserved Metal working set limit.
     let gen_headroom = sampling.max_tokens.min(4096).max(512);
     let requested_ctx = prompt_len + gen_headroom;
-    let effective_ctx = requested_ctx.max(config.n_ctx);
+    let effective_ctx = requested_ctx.min(config.n_ctx);
 
     // Build context — with or without NVMe callback, respecting KV cache quantization
     let mut ctx = if let Some(ref prefetch_state) = loaded.prefetch_state {

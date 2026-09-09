@@ -276,8 +276,9 @@ fn try_sparse_moe_mmap(
     let total_bytes: u64 = tensors.iter().map(|t| t.size_bytes).sum();
     let active_bytes = (total_bytes as f64 * activation_ratio) as u64;
 
-    // Active working set must fit in 30% of unified memory limit
-    if active_bytes > caps.unified_limit * 30 / 100 {
+    // For mmap mode to be safe on Apple Silicon Metal, the model's total mapped size
+    // cannot exceed unified limit, otherwise Metal command buffer allocations crash with OOM.
+    if total_bytes > caps.unified_limit || active_bytes > caps.unified_limit * 30 / 100 {
         return None;
     }
 
