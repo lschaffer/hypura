@@ -28,3 +28,8 @@ benchmarks/results/*
 nohup.out
 .tests/
 test_*.rs
+
+# Docs screenshots and scratch logs
+docs/*.png
+docs/*.txt
+docs/client_log.txt
