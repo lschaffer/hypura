@@ -4,6 +4,33 @@ All notable changes to the **Hypura** project are documented in this file.
 
 ---
 
+## [0.2.4] - 2026-09-09
+
+### ✨ Features & Enhancements
+
+#### 1. Full OpenAI-Compatible API Support (`/v1/*` and direct route aliases)
+* Added standard OpenAI endpoints to allow seamless drop-in integration with tools like **TealKit**, **Cursor**, **Cline**, **Continue.dev**, **LangChain**, and official OpenAI SDKs:
+  * `GET /v1/models` and `GET /models` — lists all discovered local and Ollama models in OpenAI model object format.
+  * `POST /v1/chat/completions` and `POST /chat/completions` — supports single responses, structured `tool_calls` output, thought/reasoning channel stripping, and Server-Sent Events (SSE) streaming (`stream: true`).
+  * `POST /v1/completions` and `POST /completions` — text completion with SSE streaming.
+* Defined standard request and response data structures in `src/server/openai_types.rs`.
+* Implemented Server-Sent Events streaming handlers (`sse_openai_chat_stream`, `sse_openai_completion_stream`) in `src/server/streaming.rs`.
+
+#### 2. Metal Memory & Context Overflow Protections
+* **Strict Memory Capacity Check for Sparse MoE (`src/scheduler/placement.rs`):** Ensured `try_sparse_moe_mmap` verifies that the total mapped model size strictly fits within the unified memory ceiling, preventing Metal `kIOGPUCommandBufferCallbackErrorOutOfMemory` command buffer failures.
+* **Safety Prompt Windowing (`src/compute/inference.rs`):** Added automatic prompt truncation when massive tool outputs exceed the context capacity, preventing `failed to find a memory slot for batch` / unrecoverable KV cache exhaustion.
+* **Effective Context Clamping (`src/compute/inference.rs`):** Capped `effective_ctx` to the server's configured context boundary (`config.n_ctx`) so multi-turn tool outputs do not trigger unbounded memory allocation.
+
+#### 3. Modern 14B–30B/36B Model Optimization & Evaluation
+* Authored comprehensive analysis and evaluation guide for modern 2026 models in **[docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md](docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md)**.
+* Detailed performance and tier placement guidelines for 24GB & 32GB Apple Silicon Mac mini Pro models (M4 Pro / M5 / M6).
+
+#### 4. CLI & Startup Banner Updates
+* Updated `hypura serve` console output and `start_hypura_funnel.sh` startup script to display both Ollama and OpenAI endpoint availability.
+* Added `.gitignore` rules for benchmark JSON results, test logs, and temporary documentation screenshots.
+
+---
+
 ## [0.2.3] - 2026-08-29
 
 ### 🎥 Real-World Agent Demos & Verification
