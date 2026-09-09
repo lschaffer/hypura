@@ -21,7 +21,7 @@ All notable changes to the **Hypura** project are documented in this file.
 * **Safety Prompt Windowing (`src/compute/inference.rs`):** Added automatic prompt truncation when massive tool outputs exceed the context capacity, preventing `failed to find a memory slot for batch` / unrecoverable KV cache exhaustion.
 * **Effective Context Clamping (`src/compute/inference.rs`):** Capped `effective_ctx` to the server's configured context boundary (`config.n_ctx`) so multi-turn tool outputs do not trigger unbounded memory allocation.
 
-#### 3. Modern 14B–30B/36B Model Optimization & Evaluation
+#### 3. Modern 14B–30B Model Optimization & Evaluation
 * Authored comprehensive analysis and evaluation guide for modern 2026 models in **[docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md](docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md)**.
 * Detailed performance and tier placement guidelines for 24GB & 32GB Apple Silicon Mac mini Pro models (M4 Pro / M5 / M6).
 

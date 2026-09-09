@@ -24,7 +24,7 @@ On Apple Silicon with Unified Memory Architecture (UMA), both CPU and GPU share 
 ### The 14B–30B "Memory Wall" Challenge
 * A **14B Q4_K_M** model weighs ~8.4 GB. It fits entirely in GPU memory on both 24GB and 32GB machines, achieving 20–35+ tok/s.
 * A **24B–27B Q4_K_M** model weighs ~14.0–16.5 GB. On a 24GB Mac, adding an 8k–16k context window pushes total allocation beyond 18 GB, threatening OOM crash under vanilla llama.cpp. Hypura's storage-tier placement solves this by offloading non-critical tensors.
-* A **30B–30B Q4_K_M** model weighs ~18.5–22.5 GB. On a 24GB Mac, this strictly requires Hypura's **Dense FFN streaming** or **Sparse MoE / Expert Streaming**. On a 32GB Mac, it fits with a compact context, but large context windows require Hypura's dynamic tiering.
+* A **30B–32B Q4_K_M** model weighs ~18.5–22.5 GB. On a 24GB Mac, this strictly requires Hypura's **Dense FFN streaming** or **Sparse MoE / Expert Streaming**. On a 32GB Mac, it fits with a compact context, but large context windows require Hypura's dynamic tiering.
 
 ---
 
