@@ -21,11 +21,17 @@ All notable changes to the **Hypura** project are documented in this file.
 * **Safety Prompt Windowing (`src/compute/inference.rs`):** Added automatic prompt truncation when massive tool outputs exceed the context capacity, preventing `failed to find a memory slot for batch` / unrecoverable KV cache exhaustion.
 * **Effective Context Clamping (`src/compute/inference.rs`):** Capped `effective_ctx` to the server's configured context boundary (`config.n_ctx`) so multi-turn tool outputs do not trigger unbounded memory allocation.
 
-#### 3. Modern 14B–30B Model Optimization & Evaluation
+#### 3. Dynamic KV Cache & Adaptive GPU Layer Offload
+* **Dynamic Context Scaling (`src/server/manager.rs`):** Replaced static `default_context` clamp with dynamic scaling bounded by the model's native context limit (`metadata.context_length`), allowing client requests (`num_ctx`) to safely expand up to 16k, 32k, or native model context.
+* **Adaptive Layer Placement on Context Expansion:** When an incoming request demands more context than currently loaded (`needed_ctx > active.context_size`), `ModelManager` dynamically recomputes the placement plan (`compute_placement_with_context`), automatically offloading fewer layers to GPU if needed to fit the expanded KV cache within the Metal working set without OOM.
+* **OpenAI API Context Option Support (`src/server/openai_types.rs`, `src/server/routes.rs`):** Added `num_ctx` and `options` parsing to `OpenAIChatCompletionRequest` and `OpenAICompletionRequest`, passing client-requested context lengths directly to the dynamic model manager.
+* **Startup Script Default Updated (`start_hypura_funnel.sh`):** Increased default context from 8k to 16k (`CONTEXT="${HYPURA_CONTEXT:-16384}"`) so server startup budgets GPU memory for 16k context upfront.
+
+#### 4. Modern 14B–30B Model Optimization & Evaluation
 * Authored comprehensive analysis and evaluation guide for modern 2026 models in **[docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md](docs/MODERN_MODELS_AND_OPENAI_INTERFACE.md)**.
 * Detailed performance and tier placement guidelines for 24GB & 32GB Apple Silicon Mac mini Pro models (M4 Pro / M5 / M6).
 
-#### 4. CLI & Startup Banner Updates
+#### 5. CLI & Startup Banner Updates
 * Updated `hypura serve` console output and `start_hypura_funnel.sh` startup script to display both Ollama and OpenAI endpoint availability.
 * Added `.gitignore` rules for benchmark JSON results, test logs, and temporary documentation screenshots.
 

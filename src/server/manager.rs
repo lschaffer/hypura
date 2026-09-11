@@ -18,6 +18,7 @@ pub struct ActiveModel {
     pub gguf_info: GgufInfo,
     pub context_size: u32,
     pub last_used: Instant,
+    pub entry: RegisteredModel,
 }
 
 pub struct ModelManager {
@@ -46,24 +47,38 @@ impl ModelManager {
     }
 
     /// Load or reuse an active model based on request model name and context size.
+    /// If an active model is loaded but requested context exceeds its loaded capacity,
+    /// dynamically reloads the model with adapted layer offloading to fit GPU memory.
     pub fn get_or_load(
         &mut self,
         requested_name: &str,
         requested_ctx: Option<u32>,
     ) -> anyhow::Result<(Arc<std::sync::Mutex<LoadedModel>>, String, GgufInfo)> {
-        let raw_target = requested_ctx.unwrap_or(self.default_context);
-        // Strictly cap context size to server's configured default_context to avoid client-side requests blowing past Metal GPU budget
-        let target_context = raw_target.min(self.default_context);
-
-        // 1. Check if an active model can be reused
-        if let Some(ref mut active) = self.active_model {
-            let matches_name = active.name.eq_ignore_ascii_case(requested_name)
+        // 1. Check if an active model matches requested_name
+        let active_match = self.active_model.as_ref().map(|active| {
+            active.name.eq_ignore_ascii_case(requested_name)
                 || requested_name.is_empty()
                 || active.name.starts_with(requested_name)
                 || requested_name.starts_with(&active.name)
-                || active.path == std::path::Path::new(requested_name);
+                || active.path == std::path::Path::new(requested_name)
+        }).unwrap_or(false);
 
-            if matches_name {
+        if active_match {
+            let active = self.active_model.as_mut().unwrap();
+            let max_model_ctx = if active.entry.metadata.context_length > 0 {
+                active.entry.metadata.context_length
+            } else {
+                131072
+            };
+
+            // Desired context: if client requested a context, clamp to model native limit;
+            // otherwise use default_context or currently loaded context_size
+            let needed_ctx = requested_ctx
+                .map(|c| c.min(max_model_ctx))
+                .unwrap_or(self.default_context);
+
+            // If current model context capacity already covers the needed context, reuse it directly
+            if active.context_size >= needed_ctx {
                 active.last_used = Instant::now();
                 return Ok((
                     active.loaded.clone(),
@@ -71,6 +86,16 @@ impl ModelManager {
                     active.gguf_info.clone(),
                 ));
             }
+
+            // Otherwise, we need to adapt layer placement to the larger context!
+            tracing::info!(
+                "Adapting active model '{}' context capacity: current {} -> requested {} (recalculating GPU layer offload)",
+                active.name,
+                active.context_size,
+                needed_ctx
+            );
+            let entry = active.entry.clone();
+            return self.load_model_entry(&entry, needed_ctx);
         }
 
         // 2. Resolve model path from registry or direct path
@@ -98,6 +123,15 @@ impl ModelManager {
                 requested_name
             );
         };
+
+        let max_model_ctx = if resolved.metadata.context_length > 0 {
+            resolved.metadata.context_length
+        } else {
+            131072
+        };
+        let target_context = requested_ctx
+            .map(|c| c.min(max_model_ctx))
+            .unwrap_or(self.default_context);
 
         // 3. Unload old model and load the requested model
         self.load_model_entry(&resolved, target_context)
@@ -149,6 +183,7 @@ impl ModelManager {
             gguf_info: gguf_info.clone(),
             context_size,
             last_used: Instant::now(),
+            entry: model_entry.clone(),
         });
 
         tracing::info!(

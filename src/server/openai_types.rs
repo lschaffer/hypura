@@ -24,6 +24,24 @@ pub struct OpenAIChatCompletionRequest {
     pub presence_penalty: Option<f32>,
     #[serde(default)]
     pub frequency_penalty: Option<f32>,
+    #[serde(default)]
+    pub num_ctx: Option<u32>,
+    #[serde(default)]
+    pub options: Option<serde_json::Value>,
+}
+
+impl OpenAIChatCompletionRequest {
+    pub fn requested_context(&self) -> Option<u32> {
+        if let Some(ctx) = self.num_ctx {
+            return Some(ctx);
+        }
+        if let Some(ref opts) = self.options {
+            if let Some(ctx) = opts.get("num_ctx").and_then(|v| v.as_u64()) {
+                return Some(ctx as u32);
+            }
+        }
+        None
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,6 +83,24 @@ pub struct OpenAICompletionRequest {
     pub top_p: Option<f32>,
     #[serde(default)]
     pub stop: Option<Vec<String>>,
+    #[serde(default)]
+    pub num_ctx: Option<u32>,
+    #[serde(default)]
+    pub options: Option<serde_json::Value>,
+}
+
+impl OpenAICompletionRequest {
+    pub fn requested_context(&self) -> Option<u32> {
+        if let Some(ctx) = self.num_ctx {
+            return Some(ctx);
+        }
+        if let Some(ref opts) = self.options {
+            if let Some(ctx) = opts.get("num_ctx").and_then(|v| v.as_u64()) {
+                return Some(ctx as u32);
+            }
+        }
+        None
+    }
 }
 
 // ── Response Types ──

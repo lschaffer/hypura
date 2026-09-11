@@ -432,7 +432,7 @@ async fn v1_chat_completions_handler(
 
     let (loaded, model_name, info) = {
         let mut manager = state.manager.lock().unwrap();
-        match manager.get_or_load(&req.model, None) {
+        match manager.get_or_load(&req.model, req.requested_context()) {
             Ok(res) => res,
             Err(e) => {
                 return (
@@ -602,7 +602,7 @@ async fn v1_completions_handler(
 
     let (loaded, model_name, _info) = {
         let mut manager = state.manager.lock().unwrap();
-        match manager.get_or_load(&req.model, None) {
+        match manager.get_or_load(&req.model, req.requested_context()) {
             Ok(res) => res,
             Err(e) => {
                 return (

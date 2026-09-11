@@ -6,7 +6,7 @@ set -e
 # ==============================================================================
 
 PORT=6000
-CONTEXT=8192  # Default 8k context window (client can override per request via num_ctx)
+CONTEXT="${HYPURA_CONTEXT:-16384}"  # Default 16k context window (client can override per request via num_ctx)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 
