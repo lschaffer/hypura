@@ -25,6 +25,22 @@ All notable changes to the **Hypura** project are documented in this file.
 * Added `save_state_to_file` and `load_state_from_file` to `LlamaContext`, bridging to `llama_state_save_file` and `llama_state_load_file`.
 * Added `save_to_disk` and `restore_from_disk` in `KvCacheManager` for checkpointing long agent prompts and restoring sessions across restarts.
 
+#### 4. Startup Script Flexibility & CLI Parameter Forwarding (`start_hypura_funnel.sh`)
+* Added dynamic option parsing supporting `-c / --context / --ctx-size`, `-p / --port`, and arbitrary trailing Hypura CLI flags.
+* Default baseline context increased to **32k** (`32768`) for modern long-horizon agent coding workloads.
+* Supports runtime environment variables `HYPURA_CONTEXT`, `HYPURA_PORT`, and `HYPURA_EXTRA_ARGS`.
+* **Usage Examples:**
+  ```bash
+  # Launch with 64k context window (all models dynamic on-demand)
+  ./start_hypura_funnel.sh -c 65536
+
+  # Launch a specific model pre-warmed with 128k context on port 8080
+  ./start_hypura_funnel.sh qwen2.5-coder-32b -c 131072 -p 8080
+
+  # Pass custom scan directories or extra flags through to hypura serve
+  ./start_hypura_funnel.sh -c 65536 --models-dir /Volumes/Models/gguf
+  ```
+
 ---
 
 ## [0.2.4] - 2026-09-09
