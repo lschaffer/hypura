@@ -147,15 +147,7 @@ pub fn resolve_pull_spec(query: &str) -> Result<PullSpec> {
         if parts.len() == 2 {
             let owner = parts[0];
             let repo = parts[1];
-            let filename = if let Some(tag) = tag_part {
-                if tag.ends_with(".gguf") {
-                    tag.to_string()
-                } else {
-                    format!("{}-{}.gguf", repo, tag)
-                }
-            } else {
-                format!("{}-Q4_K_M.gguf", repo)
-            };
+            let filename = build_hf_fallback_filename(repo, tag_part);
 
             let download_url = format!(
                 "https://huggingface.co/{}/{}/resolve/main/{}",
@@ -172,7 +164,378 @@ pub fn resolve_pull_spec(query: &str) -> Result<PullSpec> {
     }
 
     anyhow::bail!(
-        "Unknown model alias or repository '{query}'. Supported aliases: gemma-4:26b, gemma-4:31b, qwen3.8:27b, qwen2.5-coder:32b, mistral-small:24b, or specify HuggingFace 'owner/repo:quant'."
+        "Unknown model alias or repository '{query}'. Supported aliases: gemma-4:26b, gemma-4:31b, qwen3.8:27b, qwen2.5-coder:32b, mistral-small:24b, deepseek-coder-v2-lite, or specify HuggingFace 'owner/repo:quant' / Ollama 'model:tag'."
+    )
+}
+
+/// Strip trailing `-GGUF` / `_GGUF` (case-insensitive) from a Hugging Face repo name
+/// before appending `-<quant>.gguf` so `unsloth/Qwen3.8-27B-GGUF:Q4_K_M` resolves to
+/// `Qwen3.8-27B-Q4_K_M.gguf` instead of `Qwen3.8-27B-GGUF-Q4_K_M.gguf`.
+fn build_hf_fallback_filename(repo: &str, tag_part: Option<&str>) -> String {
+    if let Some(tag) = tag_part {
+        if tag.to_lowercase().ends_with(".gguf") {
+            return tag.to_string();
+        }
+    }
+    let base = strip_gguf_suffix(repo);
+    let quant = tag_part.unwrap_or("Q4_K_M");
+    format!("{}-{}.gguf", base, quant)
+}
+
+fn strip_gguf_suffix(name: &str) -> &str {
+    for suffix in ["-GGUF", "-gguf", "_GGUF", "_gguf", "-Gguf"] {
+        if let Some(stripped) = name.strip_suffix(suffix) {
+            return stripped;
+        }
+    }
+    name
+}
+
+/// Async resolver that supports:
+/// 1. Direct HTTP/HTTPS URLs
+/// 2. Built-in short aliases
+/// 3. Hugging Face GGUF repos (with live tree API filename matching)
+/// 4. Any Ollama registry model (`model`, `model:tag`, `namespace/model:tag`, `ollama.com/...`)
+pub async fn resolve_pull_spec_async(query: &str) -> Result<PullSpec> {
+    let q = query.trim();
+    if q.is_empty() {
+        anyhow::bail!("Model name or URL cannot be empty");
+    }
+
+    // 1. Direct URL
+    if q.starts_with("http://") || q.starts_with("https://") {
+        return resolve_pull_spec(q);
+    }
+
+    // 2. Explicit Ollama registry prefix
+    if let Some(ollama_ref) = q
+        .strip_prefix("ollama.com/")
+        .or_else(|| q.strip_prefix("registry.ollama.ai/"))
+    {
+        return resolve_ollama_registry(ollama_ref).await;
+    }
+
+    // 3. Explicit Hugging Face prefix
+    if let Some(hf_ref) = q
+        .strip_prefix("hf.co/")
+        .or_else(|| q.strip_prefix("huggingface.co/"))
+    {
+        let (repo_part, tag_part) = match hf_ref.split_once(':') {
+            Some((r, t)) => (r, Some(t)),
+            None => (hf_ref, None),
+        };
+        let parts: Vec<&str> = repo_part.split('/').collect();
+        if parts.len() == 2 {
+            return resolve_huggingface_async(parts[0], parts[1], tag_part).await;
+        }
+        anyhow::bail!("Invalid Hugging Face reference '{query}'. Expected 'hf.co/owner/repo[:quant]'.");
+    }
+
+    // 4. Built-in aliases (if no '/' and matches sync alias table)
+    if !q.contains('/') {
+        if let Ok(spec) = resolve_pull_spec(q) {
+            return Ok(spec);
+        }
+        // Bare model name (e.g. `qwen2.5:3b`, `llama3.2`, `inkling-2-mini:26b-a5b-nvfp4`) -> Ollama registry
+        return resolve_ollama_registry(q).await;
+    }
+
+    // 5. Contains '/' (`owner/repo[:tag]`): could be Hugging Face OR Ollama community namespace
+    let (repo_part, tag_part) = match q.split_once(':') {
+        Some((r, t)) => (r, Some(t)),
+        None => (q, None),
+    };
+    let parts: Vec<&str> = repo_part.split('/').collect();
+    if parts.len() != 2 {
+        anyhow::bail!("Invalid model reference '{query}'.");
+    }
+    let (owner, repo) = (parts[0], parts[1]);
+
+    let looks_like_hf = repo.to_lowercase().contains("gguf")
+        || tag_part.map(|t| t.to_lowercase().ends_with(".gguf")).unwrap_or(false)
+        || tag_part.is_none();
+
+    if looks_like_hf {
+        // Try Hugging Face API first; if repo not found on HF, fall back to Ollama registry
+        match resolve_huggingface_async(owner, repo, tag_part).await {
+            Ok(spec) => Ok(spec),
+            Err(hf_err) => resolve_ollama_registry(q).await.map_err(|_| hf_err),
+        }
+    } else {
+        // Try Ollama community namespace first (e.g. `lklimek/gemma4-text:26b-a4b-it-qat`), then HF
+        match resolve_ollama_registry(q).await {
+            Ok(spec) => Ok(spec),
+            Err(ollama_err) => resolve_huggingface_async(owner, repo, tag_part)
+                .await
+                .map_err(|_| ollama_err),
+        }
+    }
+}
+
+/// Resolve a Hugging Face repository using the HF tree API to pick the exact `.gguf` file,
+/// falling back to the constructed filename if the API is unreachable.
+async fn resolve_huggingface_async(
+    owner: &str,
+    repo: &str,
+    tag_part: Option<&str>,
+) -> Result<PullSpec> {
+    // If user already gave an exact .gguf filename, no API lookup needed
+    if let Some(tag) = tag_part {
+        if tag.to_lowercase().ends_with(".gguf") {
+            let download_url = format!(
+                "https://huggingface.co/{}/{}/resolve/main/{}",
+                owner, repo, tag
+            );
+            return Ok(PullSpec {
+                alias: repo.to_lowercase(),
+                filename: tag.to_string(),
+                download_url,
+                expected_size_bytes: None,
+            });
+        }
+    }
+
+    let api_url = format!(
+        "https://huggingface.co/api/models/{}/{}/tree/main",
+        owner, repo
+    );
+    let output = tokio::process::Command::new("curl")
+        .arg("-sS")
+        .arg("-f")
+        .arg("-L")
+        .arg("--max-time")
+        .arg("15")
+        .arg(&api_url)
+        .output()
+        .await;
+
+    if let Ok(out) = output {
+        if out.status.success() {
+            let body = String::from_utf8_lossy(&out.stdout);
+            let quant = tag_part.unwrap_or("Q4_K_M");
+            if let Some((path, size)) = find_best_hf_gguf_file(&body, quant) {
+                let filename = path.rsplit('/').next().unwrap_or(&path).to_string();
+                let download_url = format!(
+                    "https://huggingface.co/{}/{}/resolve/main/{}",
+                    owner, repo, path
+                );
+                return Ok(PullSpec {
+                    alias: repo.to_lowercase(),
+                    filename,
+                    download_url,
+                    expected_size_bytes: size,
+                });
+            }
+            anyhow::bail!(
+                "No .gguf file matching '{}' found in Hugging Face repo '{}/{}'. Try specifying the exact .gguf filename as '{}/{}:<filename>.gguf'.",
+                quant, owner, repo, owner, repo
+            );
+        }
+    }
+
+    // Fallback to constructed filename (with -GGUF suffix stripped)
+    let filename = build_hf_fallback_filename(repo, tag_part);
+    let download_url = format!(
+        "https://huggingface.co/{}/{}/resolve/main/{}",
+        owner, repo, filename
+    );
+    Ok(PullSpec {
+        alias: repo.to_lowercase(),
+        filename,
+        download_url,
+        expected_size_bytes: None,
+    })
+}
+
+/// Given JSON from `https://huggingface.co/api/models/{owner}/{repo}/tree/main`,
+/// find the best matching `.gguf` file for the requested quant (e.g. `Q4_K_M`).
+fn find_best_hf_gguf_file(tree_json: &str, quant: &str) -> Option<(String, Option<u64>)> {
+    let entries: serde_json::Value = serde_json::from_str(tree_json).ok()?;
+    let arr = entries.as_array()?;
+    let quant_lower = quant.to_lowercase();
+
+    let mut gguf_files: Vec<(String, Option<u64>)> = Vec::new();
+    for entry in arr {
+        if entry.get("type").and_then(|t| t.as_str()) != Some("file") {
+            continue;
+        }
+        let path = match entry.get("path").and_then(|p| p.as_str()) {
+            Some(p) if p.to_lowercase().ends_with(".gguf") => p.to_string(),
+            _ => continue,
+        };
+        // Skip mmproj vision projector files and non-first shards
+        let lower = path.to_lowercase();
+        if lower.contains("mmproj") {
+            continue;
+        }
+        let stem = path.strip_suffix(".gguf").unwrap_or(&path);
+        if crate::server::registry::is_non_first_shard(stem) {
+            continue;
+        }
+        let size = entry.get("size").and_then(|s| s.as_u64());
+        gguf_files.push((path, size));
+    }
+
+    // 1. Exact quant suffix match (e.g. `-q4_k_m.gguf` or `.q4_k_m.gguf`),
+    //    preferring the shortest filename so `Q4_K_M` picks `Model-Q4_K_M.gguf`
+    //    over `Model-UD-Q4_K_M.gguf` unless `UD-Q4_K_M` was explicitly requested.
+    let mut exact_matches: Vec<&(String, Option<u64>)> = gguf_files
+        .iter()
+        .filter(|(p, _)| {
+            let lower = p.to_lowercase();
+            lower.ends_with(&format!("-{}.gguf", quant_lower))
+                || lower.ends_with(&format!(".{}.gguf", quant_lower))
+                || lower.ends_with(&format!("_{}.gguf", quant_lower))
+        })
+        .collect();
+    exact_matches.sort_by_key(|(p, _)| p.len());
+    if let Some(found) = exact_matches.first() {
+        return Some((*found).clone());
+    }
+
+    // 2. Substring match on quant (e.g. `UD-Q4_K_M`, `Q4_K_M-00001-of-...`)
+    let mut sub_matches: Vec<&(String, Option<u64>)> = gguf_files
+        .iter()
+        .filter(|(p, _)| p.to_lowercase().contains(&quant_lower))
+        .collect();
+    sub_matches.sort_by_key(|(p, _)| p.len());
+    if let Some(found) = sub_matches.first() {
+        return Some((*found).clone());
+    }
+
+    None
+}
+
+/// Parse an Ollama reference (`model`, `model:tag`, `namespace/model:tag`) into
+/// `(namespace, model, tag)`.
+fn parse_ollama_ref(reference: &str) -> (String, String, String) {
+    let trimmed = reference.trim().trim_start_matches("library/");
+    let (name_part, tag) = match reference.trim().split_once(':') {
+        Some((n, t)) if !t.is_empty() => (n, t.to_string()),
+        _ => (reference.trim(), "latest".to_string()),
+    };
+
+    if let Some((ns, model)) = name_part.split_once('/') {
+        (ns.to_string(), model.to_string(), tag)
+    } else {
+        let model = trimmed.split(':').next().unwrap_or(name_part);
+        ("library".to_string(), model.to_string(), tag)
+    }
+}
+
+/// Resolve any Ollama registry model (`https://registry.ollama.ai/v2/{ns}/{model}/manifests/{tag}`)
+/// into a concrete `PullSpec` pointing to its GGUF blob.
+async fn resolve_ollama_registry(query: &str) -> Result<PullSpec> {
+    let (namespace, model, tag) = parse_ollama_ref(query);
+    let manifest_url = format!(
+        "https://registry.ollama.ai/v2/{}/{}/manifests/{}",
+        namespace, model, tag
+    );
+
+    let output = tokio::process::Command::new("curl")
+        .arg("-sS")
+        .arg("-L")
+        .arg("--max-time")
+        .arg("20")
+        .arg("-H")
+        .arg("Accept: application/vnd.docker.distribution.manifest.v2+json")
+        .arg("-w")
+        .arg("\n%{http_code}")
+        .arg(&manifest_url)
+        .output()
+        .await
+        .with_context(|| format!("Failed to query Ollama registry for '{query}'"))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        anyhow::bail!("Failed to connect to Ollama registry for '{query}': {}", stderr.trim());
+    }
+
+    let raw = String::from_utf8_lossy(&output.stdout);
+    let (body, status_str) = raw.rsplit_once('\n').unwrap_or((&raw, "000"));
+    let http_status: u16 = status_str.trim().parse().unwrap_or(0);
+
+    if http_status == 404 {
+        anyhow::bail!(
+            "Model '{}' not found in Ollama registry ({}). Check the model/tag name or specify a Hugging Face repo 'owner/repo:quant'.",
+            query, manifest_url
+        );
+    }
+    if http_status < 200 || http_status >= 300 {
+        anyhow::bail!(
+            "Ollama registry returned HTTP {} for '{}'.",
+            http_status, query
+        );
+    }
+
+    parse_ollama_manifest_json(body, query, &namespace, &model, &tag)
+}
+
+/// Parse Ollama registry manifest JSON into a `PullSpec` for the GGUF model blob.
+fn parse_ollama_manifest_json(
+    manifest_json: &str,
+    query: &str,
+    namespace: &str,
+    model: &str,
+    tag: &str,
+) -> Result<PullSpec> {
+    let json: serde_json::Value = serde_json::from_str(manifest_json)
+        .with_context(|| format!("Invalid manifest JSON from Ollama registry for '{query}'"))?;
+
+    let layers = json
+        .get("layers")
+        .and_then(|l| l.as_array())
+        .ok_or_else(|| anyhow::anyhow!("Ollama manifest for '{}' has no layers", query))?;
+
+    let mut has_per_tensor_layers = false;
+    for layer in layers {
+        let media_type = layer
+            .get("mediaType")
+            .and_then(|m| m.as_str())
+            .unwrap_or("");
+        if media_type == "application/vnd.ollama.image.model" {
+            let digest = layer
+                .get("digest")
+                .and_then(|d| d.as_str())
+                .ok_or_else(|| anyhow::anyhow!("Ollama model layer missing digest"))?;
+            let size = layer.get("size").and_then(|s| s.as_u64());
+
+            let alias = if namespace == "library" {
+                format!("{}-{}", model, tag)
+            } else {
+                format!("{}_{}-{}", namespace, model, tag)
+            }
+            .replace(['/', ':'], "-")
+            .to_lowercase();
+
+            let filename = format!("{}.gguf", alias);
+            let download_url = format!(
+                "https://registry.ollama.ai/v2/{}/{}/blobs/{}",
+                namespace, model, digest
+            );
+
+            return Ok(PullSpec {
+                alias,
+                filename,
+                download_url,
+                expected_size_bytes: size,
+            });
+        }
+        if media_type == "application/vnd.ollama.image.tensor" {
+            has_per_tensor_layers = true;
+        }
+    }
+
+    if has_per_tensor_layers {
+        anyhow::bail!(
+            "Model '{}' in the Ollama registry uses Ollama's per-tensor format (not GGUF). Hypura requires GGUF models — pull a GGUF quant from Hugging Face instead (e.g. 'hypura pull owner/repo-GGUF:Q4_K_M').",
+            query
+        );
+    }
+
+    anyhow::bail!(
+        "Ollama manifest for '{}' does not contain a GGUF model layer (application/vnd.ollama.image.model).",
+        query
     )
 }
 
@@ -474,7 +837,76 @@ mod tests {
     fn test_resolve_pull_spec_huggingface_repo() {
         let spec = resolve_pull_spec("unsloth/Qwen3.8-27B-GGUF:Q4_K_M").unwrap();
         assert_eq!(spec.alias, "qwen3.8-27b-gguf");
-        assert_eq!(spec.filename, "Qwen3.8-27B-GGUF-Q4_K_M.gguf");
-        assert!(spec.download_url.contains("unsloth/Qwen3.8-27B-GGUF/resolve/main/"));
+        assert_eq!(spec.filename, "Qwen3.8-27B-Q4_K_M.gguf");
+        assert!(spec.download_url.contains("unsloth/Qwen3.8-27B-GGUF/resolve/main/Qwen3.8-27B-Q4_K_M.gguf"));
+    }
+
+    #[test]
+    fn test_parse_ollama_ref() {
+        assert_eq!(
+            parse_ollama_ref("qwen2.5:3b"),
+            ("library".into(), "qwen2.5".into(), "3b".into())
+        );
+        assert_eq!(
+            parse_ollama_ref("llama3.2"),
+            ("library".into(), "llama3.2".into(), "latest".into())
+        );
+        assert_eq!(
+            parse_ollama_ref("lklimek/gemma4-text:26b-a4b-it-qat"),
+            ("lklimek".into(), "gemma4-text".into(), "26b-a4b-it-qat".into())
+        );
+    }
+
+    #[test]
+    fn test_parse_ollama_manifest_gguf_and_per_tensor() {
+        let gguf_manifest = r#"{
+            "schemaVersion": 2,
+            "layers": [
+                {"mediaType": "application/vnd.ollama.image.model", "digest": "sha256:abc123", "size": 1929903008},
+                {"mediaType": "application/vnd.ollama.image.template", "digest": "sha256:def456", "size": 128}
+            ]
+        }"#;
+        let spec = parse_ollama_manifest_json(gguf_manifest, "qwen2.5:3b", "library", "qwen2.5", "3b").unwrap();
+        assert_eq!(spec.alias, "qwen2.5-3b");
+        assert_eq!(spec.filename, "qwen2.5-3b.gguf");
+        assert_eq!(spec.expected_size_bytes, Some(1929903008));
+        assert_eq!(
+            spec.download_url,
+            "https://registry.ollama.ai/v2/library/qwen2.5/blobs/sha256:abc123"
+        );
+
+        let tensor_manifest = r#"{
+            "schemaVersion": 2,
+            "layers": [
+                {"mediaType": "application/vnd.ollama.image.tensor", "digest": "sha256:111", "size": 9320}
+            ]
+        }"#;
+        let err = parse_ollama_manifest_json(
+            tensor_manifest,
+            "inkling-2-mini:26b-a5b-nvfp4",
+            "library",
+            "inkling-2-mini",
+            "26b-a5b-nvfp4",
+        )
+        .unwrap_err();
+        assert!(err.to_string().contains("per-tensor format"));
+    }
+
+    #[test]
+    fn test_find_best_hf_gguf_file() {
+        let tree = r#"[
+            {"type": "file", "path": "mmproj-F16.gguf", "size": 500000000},
+            {"type": "file", "path": "Inkling-2-Mini-UD-Q4_K_M.gguf", "size": 16500000000},
+            {"type": "file", "path": "Inkling-2-Mini-Q4_K_M.gguf", "size": 16200000000},
+            {"type": "file", "path": "Inkling-2-Mini-Q8_0-00002-of-00002.gguf", "size": 12000000000}
+        ]"#;
+        let (path, size) = find_best_hf_gguf_file(tree, "Q4_K_M").unwrap();
+        assert_eq!(path, "Inkling-2-Mini-Q4_K_M.gguf");
+        assert_eq!(size, Some(16200000000));
+
+        let (ud_path, _) = find_best_hf_gguf_file(tree, "UD-Q4_K_M").unwrap();
+        assert_eq!(ud_path, "Inkling-2-Mini-UD-Q4_K_M.gguf");
+
+        assert!(find_best_hf_gguf_file(tree, "Q8_0").is_none());
     }
 }

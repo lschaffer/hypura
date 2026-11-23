@@ -173,7 +173,7 @@ async fn pull_handler(
     State(state): State<Arc<AppState>>,
     Json(req): Json<PullRequest>,
 ) -> Response {
-    let spec = match crate::model::pull::resolve_pull_spec(&req.name) {
+    let spec = match crate::model::pull::resolve_pull_spec_async(&req.name).await {
         Ok(s) => s,
         Err(e) => {
             return (

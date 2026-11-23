@@ -5,7 +5,7 @@ use anyhow::Result;
 use tokio::sync::mpsc;
 
 use hypura::model::pull::{
-    detect_default_models_dir, download_model_with_progress, resolve_pull_spec,
+    detect_default_models_dir, download_model_with_progress, resolve_pull_spec_async,
 };
 use hypura::server::ollama_types::PullResponseChunk;
 
@@ -14,7 +14,7 @@ pub async fn run(
     models_dir: Option<PathBuf>,
     force: bool,
 ) -> Result<()> {
-    let spec = resolve_pull_spec(&model)?;
+    let spec = resolve_pull_spec_async(&model).await?;
     let target_dir = models_dir.unwrap_or_else(detect_default_models_dir);
 
     println!();
