@@ -64,15 +64,16 @@ impl TensorRole {
             return Self::MoeRouter;
         }
         if name.contains("_exps.") {
-            // Fused expert tensors: all experts in one tensor (e.g., Mixtral).
-            // Detected by the `_exps.` suffix without a per-expert numeric index
-            // after it. Pattern: `blk.N.ffn_gate_exps.weight` (fused) vs
-            // `blk.N.ffn_gate_exps.0.weight` (individual, rare).
+            // Fused expert weight tensors: all experts in one tensor (e.g., Mixtral, Inkling 2).
+            // Pattern: `blk.N.ffn_gate_exps.weight` (fused) vs `blk.N.ffn_gate_exps.0.weight` (individual).
+            // Tiny auxiliary tensors like `.scale`, `.input_scale`, `.bias` must stay resident on GPU.
             if is_fused_expert_tensor(name) {
                 return Self::MoeFusedExperts;
             }
-            let expert_id = parse_expert_id(name).unwrap_or(0);
-            return Self::MoeExpert { expert_id };
+            if let Some(expert_id) = parse_expert_id(name) {
+                return Self::MoeExpert { expert_id };
+            }
+            return Self::Other(name.to_string());
         }
         if name.contains("attn_q") || name.contains("attn.q") {
             return Self::AttentionQuery;
@@ -121,8 +122,9 @@ impl TensorRole {
 fn is_fused_expert_tensor(name: &str) -> bool {
     if let Some(pos) = name.find("_exps.") {
         let after = &name[pos + 6..]; // skip "_exps."
-        // If the next segment is NOT a number, it's fused
-        !after.starts_with(|c: char| c.is_ascii_digit())
+        // Only `.weight` is a large fused expert matrix; `.scale`/`.input_scale`/`.bias`
+        // are tiny auxiliary tensors that must remain resident on GPU.
+        after == "weight"
     } else {
         false
     }

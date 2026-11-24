@@ -147,6 +147,26 @@ impl LlamaModel {
         }
     }
 
+    /// Return the GGUF `general.architecture` string if present (e.g. `"inkling2_loop"`).
+    pub fn architecture(&self) -> Option<String> {
+        let key = std::ffi::CString::new("general.architecture").ok()?;
+        let mut buf = [0u8; 128];
+        let n = unsafe {
+            hypura_sys::llama_model_meta_val_str(
+                self.ptr,
+                key.as_ptr(),
+                buf.as_mut_ptr() as *mut std::os::raw::c_char,
+                buf.len(),
+            )
+        };
+        if n > 0 {
+            let len = (n as usize).min(buf.len() - 1);
+            Some(String::from_utf8_lossy(&buf[..len]).to_string())
+        } else {
+            None
+        }
+    }
+
     /// Check if a token signals end of generation.
     pub fn is_eog(&self, token: i32) -> bool {
         unsafe { hypura_sys::llama_vocab_is_eog(self.vocab, token) }
@@ -431,6 +451,16 @@ impl LlamaContext {
         if cb_eval.is_some() {
             params.cb_eval = cb_eval;
             params.cb_eval_user_data = callback_data;
+        }
+
+        // Workaround for llama.cpp graph-reuse bug on inkling2_loop hybrid ISWA + recurrent graphs,
+        // where reusing the reserved n_ubatch graph causes GGML_ASSERT(i1 >= 0 && i1 < ne1) in
+        // ggml_compute_forward_set_rows on the first full-ubatch prefill.
+        if model.architecture().map_or(false, |a| a.starts_with("inkling2"))
+            && std::env::var_os("LLAMA_GRAPH_REUSE_DISABLE").is_none()
+        {
+            tracing::info!("Disabling llama.cpp graph reuse for inkling2 architecture to prevent SET_ROWS crash");
+            std::env::set_var("LLAMA_GRAPH_REUSE_DISABLE", "1");
         }
 
         let ptr = unsafe { hypura_sys::llama_init_from_model(model.as_ptr(), params) };

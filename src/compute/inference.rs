@@ -1390,11 +1390,18 @@ pub fn gpu_layers_from_placement(
     gguf: &GgufFile,
     gpu_budget_bytes: u64,
 ) -> i32 {
+    let is_looped_arch = gguf
+        .get_string("general.architecture")
+        .map_or(false, |a| a.contains("loop"));
+
     // SparseMoeMmap: if model fits entirely in GPU, offload all layers. If not,
     // offload as many layers as fit in the GPU budget rather than falling back to CPU-only (ngl=0).
     if plan.inference_mode == InferenceMode::SparseMoeMmap {
         let total_bytes = gguf.total_tensor_bytes();
         if total_bytes <= gpu_budget_bytes {
+            if is_looped_arch {
+                return 999; // Looped models expand physical layers into more logical layers in llama.cpp
+            }
             let max_layer = gguf.tensors.iter().filter_map(|t| t.layer_index).max().unwrap_or(0);
             return max_layer as i32 + 1 + 1; // all layers + output
         }
@@ -1458,6 +1465,9 @@ pub fn gpu_layers_from_placement(
 
     // If all repeating layers + non-layer tensors fit in the GPU budget, offload everything (+1 for output).
     if total_layer_bytes.saturating_add(non_layer_gpu_size) <= gpu_budget_bytes {
+        if is_looped_arch && first_nvme_layer.is_none() {
+            return 999; // Offload all expanded logical layers (e.g. 49/49 for inkling2_loop)
+        }
         return from_plan.min(max_layer + 1 + 1);
     }
 

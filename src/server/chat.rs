@@ -52,6 +52,13 @@ pub fn format_chat_prompt(
         return format_gptoss_chat_prompt(messages, tools);
     }
 
+    let is_inkling2 = l.contains("inkling")
+        || l.contains("<|message_user|>")
+        || l.contains("<|content_text|>");
+    if is_inkling2 {
+        return format_inkling2_chat_prompt(messages, tools, l.contains("__hypura_no_think__"));
+    }
+
     let is_qwen = l.contains("qwen");
     if is_qwen {
         return format_qwen_chat_prompt(messages, tools, &l);
@@ -1073,6 +1080,145 @@ fn format_gemma4_tool_declaration(tool: &serde_json::Value) -> String {
     out
 }
 
+/// Specialized prompt formatting for Inkling 2 / Inkling 2 Mini matching its
+/// GGUF Jinja template (`<|message_system|>`, `<|message_user|>`, `<|message_model|>`,
+/// `<|message_tool|>`, `<|content_text|>`, `<|content_invoke_tool_json|>`, `<|end_message|>`).
+fn format_inkling2_chat_prompt(
+    messages: &[ChatMessage],
+    tools: Option<&serde_json::Value>,
+    no_think_from_req: bool,
+) -> String {
+    let mut prompt = String::new();
+    let no_think = no_think_from_req
+        || messages.iter().any(|m| {
+            (m.role == "user" || m.role == "system" || m.role == "developer")
+                && m.content.contains("/no_think")
+        });
+    let effort_str = if no_think { "0" } else { "0.2" };
+
+    // 1. Tool declarations (if any)
+    if let Some(serde_json::Value::Array(arr)) = tools {
+        if !arr.is_empty() {
+            let mut specs = Vec::with_capacity(arr.len());
+            for tool in arr {
+                let fn_obj = tool.get("function").unwrap_or(tool);
+                let name = fn_obj.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                let desc = fn_obj
+                    .get("description")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                let params = fn_obj
+                    .get("parameters")
+                    .cloned()
+                    .unwrap_or_else(|| serde_json::json!({}));
+                let ttype = tool
+                    .get("type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("function");
+                specs.push(serde_json::json!({
+                    "description": desc,
+                    "name": name,
+                    "parameters": params,
+                    "type": ttype,
+                }));
+            }
+            let specs_json = serde_json::to_string(&specs).unwrap_or_else(|_| "[]".into());
+            prompt.push_str("<|message_system|>tool_declare<|content_xml|>");
+            prompt.push_str(&specs_json);
+            prompt.push_str("<|end_message|>");
+        }
+    }
+
+    let mut effort_emitted = false;
+    for msg in messages {
+        if !effort_emitted && msg.role != "system" {
+            prompt.push_str(&format!(
+                "<|message_system|><|content_text|>Thinking effort level: {effort_str}<|end_message|>"
+            ));
+            effort_emitted = true;
+        }
+
+        match msg.role.as_str() {
+            "system" => {
+                prompt.push_str("<|message_system|><|content_text|>");
+                prompt.push_str(&msg.content);
+                prompt.push_str("<|end_message|>");
+            }
+            "user" => {
+                prompt.push_str("<|message_user|><|content_text|>");
+                prompt.push_str(&msg.content);
+                prompt.push_str("<|end_message|>");
+            }
+            "tool" => {
+                let tool_name = msg
+                    .tool_call_id
+                    .as_deref()
+                    .and_then(|id| {
+                        messages.iter().find_map(|prev| {
+                            if prev.role == "assistant" {
+                                prev.tool_calls.as_ref().and_then(|tcs| {
+                                    tcs.iter()
+                                        .find(|tc| tc.id.as_deref() == Some(id))
+                                        .map(|tc| tc.function.name.as_str())
+                                })
+                            } else {
+                                None
+                            }
+                        })
+                    })
+                    .unwrap_or("");
+                prompt.push_str("<|message_tool|>");
+                prompt.push_str(tool_name);
+                prompt.push_str("<|content_text|>");
+                prompt.push_str(&msg.content);
+                prompt.push_str("<|end_message|>");
+            }
+            "assistant" => {
+                if !msg.content.is_empty() || msg.tool_calls.is_none() {
+                    prompt.push_str("<|message_model|><|content_text|>");
+                    prompt.push_str(&msg.content);
+                    prompt.push_str("<|end_message|>");
+                }
+                if let Some(ref tool_calls) = msg.tool_calls {
+                    for tc in tool_calls {
+                        let args_obj = if tc.function.arguments.is_object() {
+                            tc.function.arguments.clone()
+                        } else if let Some(s) = tc.function.arguments.as_str() {
+                            serde_json::from_str(s).unwrap_or_else(|_| serde_json::json!({}))
+                        } else {
+                            serde_json::json!({})
+                        };
+                        let call_json = serde_json::json!({
+                            "name": tc.function.name,
+                            "args": args_obj,
+                        });
+                        prompt.push_str("<|message_model|>");
+                        prompt.push_str(&tc.function.name);
+                        prompt.push_str("<|content_invoke_tool_json|>");
+                        prompt.push_str(&serde_json::to_string(&call_json).unwrap_or_default());
+                        prompt.push_str("<|end_message|>");
+                    }
+                }
+            }
+            _ => {
+                prompt.push_str("<|message_user|><|content_text|>");
+                prompt.push_str(&msg.content);
+                prompt.push_str("<|end_message|>");
+            }
+        }
+    }
+
+    if !effort_emitted {
+        prompt.push_str(&format!(
+            "<|message_system|><|content_text|>Thinking effort level: {effort_str}<|end_message|>"
+        ));
+    }
+
+    // Generation prompt
+    prompt.push_str("<|message_model|>");
+    prompt
+}
+
 /// Specialized prompt formatting for Gemma 4 (26B MoE / 31B / E2B / E4B) matching
 /// `google-gemma-4-31B-it.jinja` and `llama.cpp`'s `gemma4_model_turn_builder`.
 fn format_gemma4_chat_prompt(
@@ -1632,6 +1778,7 @@ fn strip_thought_blocks(text: &str) -> String {
         ("<|thought>\n", "<thought|>"),
         ("<|thought>", "<thought|>"),
         ("<|thought>", "</thought|>"),
+        ("<|content_thinking|>", "<|end_message|>"),
         ("<thought>", "</thought>"),
         ("<think>", "</think>"),
         ("[THINK]\n", "[/THINK]"),
@@ -1658,6 +1805,55 @@ pub fn parse_tool_calls(raw_output: &str) -> (String, Option<Vec<ToolCall>>) {
     // 0. Clean up thought channels first: <think>...</think>, <thought>...</thought>, etc.
     // This prevents thinking deliberations/hypothetical examples inside <think> from being parsed as real tool calls.
     let mut cleaned_text = strip_thought_blocks(raw_output);
+
+    // 0b. Try parsing Inkling 2 tool call syntax:
+    // e.g. `<|message_model|>func_name<|content_invoke_tool_json|>{"name":"func_name","args":{...}}<|end_message|>`
+    while let Some(invoke_idx) = cleaned_text.find("<|content_invoke_tool_json|>") {
+        let after_marker = &cleaned_text[invoke_idx + "<|content_invoke_tool_json|>".len()..];
+        let json_end_opt = after_marker
+            .find("<|end_message|>")
+            .or_else(|| find_matching_brace(after_marker));
+        if let Some(end_offset) = json_end_opt {
+            let raw_json = after_marker[..end_offset].trim();
+            if let Ok(val) = serde_json::from_str::<serde_json::Value>(raw_json) {
+                if let Some(name) = val.get("name").and_then(|v| v.as_str()) {
+                    let args = val
+                        .get("args")
+                        .or_else(|| val.get("arguments"))
+                        .cloned()
+                        .unwrap_or_else(|| serde_json::json!({}));
+                    tool_calls.push(ToolCall {
+                        id: Some(generate_tool_call_id()),
+                        call_type: Some("function".into()),
+                        function: FunctionCall {
+                            name: name.to_string(),
+                            arguments: args,
+                        },
+                    });
+                    // Remove prefix `<|message_model|>func_name` if present before `<|content_invoke_tool_json|>`
+                    let remove_start = cleaned_text[..invoke_idx]
+                        .rfind("<|message_model|>")
+                        .unwrap_or(invoke_idx);
+                    let mut remove_end =
+                        invoke_idx + "<|content_invoke_tool_json|>".len() + end_offset;
+                    if cleaned_text[remove_end..].starts_with("<|end_message|>") {
+                        remove_end += "<|end_message|>".len();
+                    }
+                    cleaned_text.replace_range(remove_start..remove_end, "");
+                    continue;
+                }
+            }
+        }
+        break;
+    }
+
+    // Strip Inkling 2 structural wrappers if present
+    if cleaned_text.contains("<|content_text|>") || cleaned_text.contains("<|end_message|>") {
+        cleaned_text = cleaned_text
+            .replace("<|message_model|>", "")
+            .replace("<|content_text|>", "")
+            .replace("<|end_message|>", "");
+    }
 
     // 1. Try parsing GPT-OSS / Harmony tool call syntax:
     // e.g. "to=functions.<name><|channel|>commentary<|message|>{...}<|call|>"
@@ -2442,6 +2638,7 @@ fn strip_channel_tags(text: &str) -> String {
         ("<|thought>\n", "<thought|>"),
         ("<|thought>", "<thought|>"),
         ("<|thought>", "</thought|>"),
+        ("<|content_thinking|>", "<|end_message|>"),
         ("<thought>", "</thought>"),
         ("<think>", "</think>"),
         ("[THINK]\n", "[/THINK]"),
@@ -2983,5 +3180,54 @@ mod tests {
         assert!(prompt.contains("<tool_call>\n<function=list_directory>\n<parameter=path>\n.\n</parameter>\n</function>\n</tool_call><|im_end|>"));
         assert!(prompt.contains("<|im_start|>user\n<tool_response>\nCargo.toml\nsrc/\n</tool_response><|im_end|>"));
         assert!(prompt.ends_with("<|im_start|>assistant\n<think>\n"));
+    }
+
+    #[test]
+    fn test_format_and_parse_inkling2_tools() {
+        let tools = serde_json::json!([
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get weather for a city",
+                    "parameters": {
+                        "type": "object",
+                        "properties": { "city": { "type": "string" } },
+                        "required": ["city"]
+                    }
+                }
+            }
+        ]);
+        let msgs = vec![
+            ChatMessage {
+                role: "system".into(),
+                content: "You are helpful.".into(),
+                ..Default::default()
+            },
+            ChatMessage {
+                role: "user".into(),
+                content: "Weather in Vienna?".into(),
+                ..Default::default()
+            },
+        ];
+
+        let prompt = format_chat_prompt(&msgs, Some(&tools), Some("inkling2_loop Inkling-2-Mini"));
+        assert!(prompt.contains("<|message_system|>tool_declare<|content_xml|>"));
+        assert!(prompt.contains("Thinking effort level: 0.2<|end_message|>"));
+        assert!(prompt.contains("<|message_user|><|content_text|>Weather in Vienna?<|end_message|>"));
+        assert!(prompt.ends_with("<|message_model|>"));
+
+        let raw_call = "<|content_thinking|>Need weather tool.<|end_message|><|message_model|>get_weather<|content_invoke_tool_json|>{\"name\":\"get_weather\",\"args\":{\"city\":\"Vienna\"}}<|end_message|>";
+        let (text, calls) = parse_tool_calls(raw_call);
+        assert!(text.trim().is_empty());
+        let calls = calls.expect("expected inkling2 tool call");
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].function.name, "get_weather");
+        assert_eq!(calls[0].function.arguments["city"], "Vienna");
+
+        let raw_text = "<|content_thinking|>Simple math.<|end_message|><|message_model|><|content_text|>2 + 2 equals 4.<|end_message|>";
+        let (text, calls) = parse_tool_calls(raw_text);
+        assert!(calls.is_none());
+        assert_eq!(text.trim(), "2 + 2 equals 4.");
     }
 }

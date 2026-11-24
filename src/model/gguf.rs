@@ -124,6 +124,13 @@ pub enum GgmlType {
     F64,
     IQ1M,
     BF16,
+    TQ1_0,
+    TQ2_0,
+    MXFP4,
+    NVFP4,
+    Q1_0,
+    Q2_0,
+    F8E4M3,
     Unknown(u32),
 }
 
@@ -159,6 +166,13 @@ impl GgmlType {
             28 => Self::F64,
             29 => Self::IQ1M,
             30 => Self::BF16,
+            34 => Self::TQ1_0,
+            35 => Self::TQ2_0,
+            39 => Self::MXFP4,
+            40 => Self::NVFP4,
+            41 => Self::Q1_0,
+            42 => Self::Q2_0,
+            43 => Self::F8E4M3,
             other => Self::Unknown(other),
         }
     }
@@ -196,6 +210,13 @@ impl GgmlType {
             Self::IQ2S => (256, 82),
             Self::IQ4XS => (32, 18),
             Self::IQ1M => (256, 56),
+            Self::TQ1_0 => (256, 54),
+            Self::TQ2_0 => (256, 66),
+            Self::MXFP4 => (32, 17),
+            Self::NVFP4 => (64, 36),
+            Self::Q1_0 => (128, 18),
+            Self::Q2_0 => (64, 18),
+            Self::F8E4M3 => (1, 1),
             Self::Unknown(_) => (1, 1), // fallback
         }
     }

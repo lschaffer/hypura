@@ -30,9 +30,31 @@ pub struct OpenAIChatCompletionRequest {
     pub num_ctx: Option<u32>,
     #[serde(default)]
     pub options: Option<serde_json::Value>,
+    #[serde(default)]
+    pub think: Option<bool>,
+    #[serde(default)]
+    pub reasoning_effort: Option<String>,
 }
 
 impl OpenAIChatCompletionRequest {
+    pub fn is_thinking_disabled(&self) -> bool {
+        if self.think == Some(false) {
+            return true;
+        }
+        if let Some(ref eff) = self.reasoning_effort {
+            let e = eff.trim().to_ascii_lowercase();
+            if matches!(e.as_str(), "none" | "off" | "false" | "0" | "0.0") {
+                return true;
+            }
+        }
+        if let Some(ref opts) = self.options {
+            if opts.get("think").and_then(|v| v.as_bool()) == Some(false) {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn requested_context(&self) -> Option<u32> {
         if let Some(ctx) = self.num_ctx {
             return Some(ctx);

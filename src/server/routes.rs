@@ -653,6 +653,7 @@ async fn v1_chat_completions_handler(
 
     // Convert OpenAIChatMessage to internal ChatMessage while resolving tool_call_id -> function name
     let mut id_to_tool_name = std::collections::HashMap::<String, String>::new();
+    let no_think_flag = req.is_thinking_disabled();
     let mut internal_messages = Vec::with_capacity(req.messages.len());
     for m in req.messages {
         let converted_calls = m.tool_calls.map(|tcs| {
@@ -706,7 +707,8 @@ async fn v1_chat_completions_handler(
             return;
         }
         let tmpl = model.model.chat_template().unwrap_or_default();
-        let full_hint = format!("{} {} {} {}", arch, active_model_name, model_req_name, tmpl);
+        let no_think_hint = if no_think_flag { " __hypura_no_think__" } else { "" };
+        let full_hint = format!("{} {} {} {}{}", arch, active_model_name, model_req_name, tmpl, no_think_hint);
         let prompt = format_chat_prompt(&internal_messages, req_tools.as_ref(), Some(&full_hint));
         if !is_streaming && prompt.len() > 12000 {
             let estimated_tokens = prompt.len() / 4;
