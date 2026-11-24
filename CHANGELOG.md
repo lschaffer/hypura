@@ -4,6 +4,30 @@ All notable changes to the **Hypura** project are documented in this file.
 
 ---
 
+## [0.2.8] - 2026-11-24
+
+### 🚀 Ollama Registry Pull, `llama.cpp` Upgrade & Inkling 2 Mini Support
+
+#### 1. Ollama Registry & Hugging Face Tree API Pull (`src/model/pull.rs`, `src/cli/pull.rs`, `src/server/routes.rs`)
+* Added `resolve_pull_spec_async` so `hypura pull` and `POST /api/pull` can download any GGUF model directly from the **Ollama Registry** (`registry.ollama.ai`) by bare `model` / `model:tag` or `namespace/model:tag`.
+* Added clear detection and guidance when an Ollama registry tag uses per-tensor format (`application/vnd.ollama.image.tensor`) instead of GGUF.
+* Added live **Hugging Face Tree API** resolution for `owner/repo:quant` queries (auto-selecting exact `.gguf` files, skipping `mmproj` and non-first shards, and stripping `-GGUF` suffixes on fallback filenames).
+
+#### 2. Submodule Upgrade to `llama.cpp` `51831d47d` (`vendor/llama.cpp`)
+* Upgraded `vendor/llama.cpp` from `b12086` (`749db7f03`) to `51831d47d` (post-`b12653`), adding native **Metal NVFP4** support (`#32825`), **Inkling 2 Mini** looped-transformer support (`#32694`, `#32704`), and fused DeepSeek-V4 / GLM MoE routing on Metal.
+
+#### 3. Modern GGUF Quant Block Sizes & MoE `.scale` Handling (`src/model/gguf.rs`, `src/model/tensor_role.rs`)
+* Added exact GGML block sizes for `TQ1_0 (34)`, `TQ2_0 (35)`, `MXFP4 (39)`, `NVFP4 (40)`, `Q1_0 (41)`, `Q2_0 (42)`, and `F8_E4M3 (43)` so 2026 quantized models report accurate memory sizes and stay in unified memory instead of spilling to NVMe.
+* Restricted `is_fused_expert_tensor()` to `.weight` tensors only so tiny `.scale` / `.input_scale` / `.bias` auxiliary tensors remain resident on Metal GPU.
+
+#### 4. Inkling 2 Mini Chat/Tool Template, Thinking Control & Stability (`src/server/chat.rs`, `src/server/streaming.rs`, `src/server/openai_types.rs`, `src/compute/ffi.rs`, `src/compute/inference.rs`)
+* Added native Inkling 2 chat & tool-calling formatting (`<|message_system|>`, `<|message_user|>`, `<|message_model|>`, `<|message_tool|>`, `tool_declare<|content_xml|>`, `<|content_invoke_tool_json|>`) and stream filtering for `<|content_thinking|>...<|end_message|>`.
+* Added `think` and `reasoning_effort` request fields on `OpenAIChatCompletionRequest` so `"think": false` / `"reasoning_effort": "none"` emits `Thinking effort level: 0`.
+* Automatically disables `llama.cpp` graph reuse (`LLAMA_GRAPH_REUSE_DISABLE=1`) for `inkling2*` architectures to avoid a `GGML_ASSERT(i1 >= 0 && i1 < ne1)` crash in `ggml_compute_forward_set_rows` on full-ubatch prefills, and offloads all expanded logical layers (`999`) for looped architectures.
+* **Hardware Requirement Note — Inkling 2 Mini (`inkling2_loop`)**: Requires **32 GB+ Unified Memory** (RAM) for practical speed. On 24 GB Macs, its 15.5 GB weights + 48 looped layers' F16 KV cache (2.6–5.1 GB at 16k–32k) + Metal compute buffers exceed the ~18.6 GB GPU working set, forcing partial CPU offload (~235 graph splits, ~7–8 tok/s prefill). For 24 GB Macs, use `lklimek/gemma4-text:26b-a4b-it-qat`, `devstral-small-2`, `ministral-3:14b`, or `qwen3:14b`.
+
+---
+
 ## [0.2.7] - 2026-11-12
 
 ### 🐛 Multi-Shard GGUF & Sparse MoE Reasoning Fixes
